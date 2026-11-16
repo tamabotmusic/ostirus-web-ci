@@ -33,6 +33,12 @@ jobs:
           cmake -S ucor-gearmulator-src-2026-10-07/gearmulator -B build/native -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CXX_STANDARD=17 \
+            -Dgearmulator_BUILD_JUCEPLUGIN=OFF \
+            -Dgearmulator_BUILD_JUCEPLUGIN_CLAP=OFF \
+            -Dgearmulator_SYNTH_VAVRA=OFF \
+            -Dgearmulator_SYNTH_XENIA=OFF \
+            -Dgearmulator_SYNTH_NODALRED2X=OFF \
+            -Dgearmulator_SYNTH_JE8086=OFF \
             -DOSTIRUS_NATIVE_HOST_SOURCE="$GITHUB_WORKSPACE/hybrid/native/ostirus_native_host.cpp"
       - name: Compilar
         run: cmake --build build/native --target ostirus_native_host --parallel 4
