@@ -55,6 +55,8 @@ jobs:
           actions-cache-folder: "emsdk-cache"
       - name: Compilar WebAssembly
         run: bash scripts/build_ti2.sh ucor-gearmulator-src-2026-10-07/gearmulator build/wasm
+      - name: Verificar que el motor WASM arranca sin ROM y que la API responde
+        run: node scripts/smoke_wasm_node.cjs --engine-dir build/wasm/source/wasmApi --timeout-ms 10000
       - name: Publicar solo artefactos del compilador
         uses: actions/upload-artifact@v4
         with:
