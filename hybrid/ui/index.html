@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#121720">
+  <title>OsTIrus Web — TI2 Nativo</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="monogram">O</div><div>
+        <div class="brand-name">OsTIrus <span>Web</span></div>
+        <div class="brand-subtitle">TI2 · MOTOR NATIVO PARA macOS</div>
+      </div></div>
+      <div id="connection" class="status-pill" role="status">Conectando…</div>
+    </header>
+    <section class="hero">
+      <div class="eyebrow">LABORATORIO DE AUDIO · COMPILACIÓN LOCAL</div>
+      <h1>Motor TI2. Interfaz web.</h1>
+      <p>Las notas se envían al emulador nativo de Gearmulator. El sonido sale directamente por CoreAudio del Mac: Chrome no ejecuta los procesadores DSP.</p>
+    </section>
+    <section class="grid" aria-label="Diagnóstico">
+      <article class="stat"><span>Motor nativo</span><strong id="engine">Comprobando…</strong><small id="engineDetail">—</small></article>
+      <article class="stat"><span>Bloques de audio</span><strong id="blocks">—</strong><small>Debe aumentar con el tiempo</small></article>
+      <article class="stat"><span>Salida de audio</span><strong id="level">Sin datos</strong><div class="meter"><i id="levelBar"></i></div></article>
+      <article class="stat"><span>Ruta de salida</span><strong id="pair">—</strong><small id="errors">Errores DSP: —</small></article>
+    </section>
+    <section class="instrument" aria-label="Control del sintetizador">
+      <div class="instrument-top">
+        <div><div class="eyebrow">VIRUS TI2 · MOTOR EXPERIMENTAL</div><h2>Teclado OsTIrus</h2></div>
+        <div class="controls">
+          <label for="program">Preset</label>
+          <select id="program" aria-label="Programa del sintetizador"></select>
+          <button id="panic" class="secondary" type="button">Soltar notas</button>
+          <button id="external" class="secondary" type="button">Conectar MIDI</button>
+        </div>
+      </div>
+      <div class="keyboard-scroll"><div id="keyboard" class="keyboard" role="group" aria-label="Teclado musical de dos octavas"></div></div>
+      <p class="keyboard-hint">Toca con el ratón o usa las teclas A, W, S, E, D, F, T, G, Y, H, U, J. Para teclado MIDI externo, pulsa «Conectar MIDI».</p>
+      <div id="midiInfo" class="midi-info">MIDI externo no conectado</div>
+    </section>
+    <section class="notice" aria-live="polite">
+      <strong id="diagnosisTitle">Esperando datos del motor…</strong>
+      <p id="diagnosis">Este indicador mide la señal real del motor nativo, no un oscilador de prueba.</p>
+      <p class="tiny">ROM: exclusivamente local. No se envía al navegador ni a GitHub. Interfaz experimental: la compilación correcta no garantiza que el firmware haya arrancado.</p>
+    </section>
+    <footer><span>OsTIrus Web · Investigación GPL / DSP56300</span><span>Sin conexión a Internet · 127.0.0.1</span></footer>
+  </main>
+</body>
+</html>
