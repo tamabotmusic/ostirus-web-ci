@@ -1,4 +1,5 @@
 name: OsTIrus Native Apple Silicon (sin firmware)
+# Build under a deliberate commit marker to avoid recompiling on every file edit.
 
 on:
   workflow_dispatch:
