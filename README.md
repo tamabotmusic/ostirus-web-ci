@@ -19,3 +19,7 @@ Repositorio público que contiene **únicamente infraestructura y pruebas** para
 **NO SUBIR NUNCA** ROM, firmware, `.bin`, sysex, presets privados, datos personales ni material propietario. No introducir secretos de GitHub Actions que contengan ROM. Los usuarios deben aportar su firmware legítimo de manera local, y este repositorio no lo solicita.
 
 Código del emulador: [dsp56300/Gearmulator](https://github.com/dsp56300/gearmulator). Paquete fuente GPL y licencia: [μcor](https://ucor.net/licenses.html). Las obras derivadas del motor se rigen por GPL-3.0 y las demás licencias de los componentes. No hay afiliación con Access Music.
+
+## Primera compilación de prueba
+
+La ejecución de compilación se inicia deliberadamente mediante un mensaje de commit que contenga `[build-wasm]` o el control `Run workflow` de GitHub. Esta compilación **no ejecuta una ROM** ni prueba la generación de sonido; solo verifica que el motor original modificado puede compilarse con Emscripten.
