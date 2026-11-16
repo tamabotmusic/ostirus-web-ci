@@ -53,3 +53,9 @@ Además del motor WASM, el repositorio incorpora dos rutas de investigación par
 **Evidencia privada local (no subida a GitHub):** en Linux x86_64 el host CoreAudio/diagnóstico ha sido compilado con su objetivo CMake, y su modo offline procesó notas MIDI reales desde un firmware legítimo. La salida estéreo fue silencio antes de Note On, seguida de una señal con RMS 0,095 y pico 0,568. El JIT nativo puede generar sonido. Esto NO confirma que CoreAudio o el rendimiento de la versión ARM64 estén listos para macOS.
 
 La compilación `.github/workflows/native-macos.yml` genera un ejecutable ARM64 sin ROM. Se debe confirmar su éxito y después validar en un Mac real. La interfaz web y el servidor local se conservan separados del proceso de audio; ninguna ROM se transmite por Internet.
+
+## Prueba experimental: OsTIrus Web Nativo para Mac
+
+El directorio `hybrid/` contiene un panel web y un puente HTTP limitado a `127.0.0.1` para controlar un motor nativo de TI2 mediante CoreAudio. No ejecuta DSP en AudioWorklet y la ROM se selecciona mediante el diálogo local de macOS. El navegador solo recibe estado y señal de salida medida, nunca bytes del firmware.
+
+La compilación **OsTIrus Native Apple Silicon (sin firmware)** empaqueta `OsTIrus_Web_Nativo.zip` como artefacto. Descomprimir y abrir `ABRIR_OSTIRUS_WEB.command`. Este paquete es experimental, no está firmado/notarizado ni tiene aún audio verificado en el Mac del usuario. El éxito del build no equivale a verificar el sonido.
