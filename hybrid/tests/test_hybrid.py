@@ -68,7 +68,7 @@ class LocalHTTPTests(unittest.TestCase):
         self.engine.write_text(FAKE_HOST, encoding="utf-8")
         self.engine.chmod(self.engine.stat().st_mode | stat.S_IXUSR)
         self.rom = directory / "private-test-firmware.bin"
-        self.rom.write_bytes(b"TEST ONLY — no proprietary data")
+        self.rom.write_bytes(b"TEST ONLY - no proprietary data")
         self.backend = server_module.NativeHost(str(self.engine), str(self.rom))
         handler = type("TestLocalHandler", (server_module.LocalHandler,), {"backend": self.backend})
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
