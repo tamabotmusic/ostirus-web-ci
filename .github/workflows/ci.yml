@@ -46,6 +46,8 @@ jobs:
         run: tar -xf ucor-gearmulator-src-2026-10-07.tar.xz
       - name: Seleccionar TI2 y preparar arranque
         run: python scripts/prepare_ti2.py ucor-gearmulator-src-2026-10-07
+      - name: Aplicar guardas DSP y colas WASM (sin ROM)
+        run: python scripts/patch_wasm_runtime.py ucor-gearmulator-src-2026-10-07/gearmulator
       - name: Instalar Emscripten 5.0.4
         uses: mymindstorm/setup-emsdk@v14
         with:
