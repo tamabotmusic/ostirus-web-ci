@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -229,17 +230,28 @@ def main():
     args = parser.parse_args()
     if args.port < 1024 or args.port > 65535:
         parser.error("Port out of range")
-    host = NativeHost(args.engine, args.rom)
-    LocalHandler.backend = host
+    # Bind the port before starting native audio, avoiding an orphan process if
+    # another local service already occupies the listening socket.
     server = ThreadingHTTPServer(("127.0.0.1", args.port), LocalHandler)
-    print(f"OsTIrus Web Nativo en http://127.0.0.1:{args.port}/", flush=True)
+    host = None
     try:
-        server.serve_forever(poll_interval=0.2)
-    except KeyboardInterrupt:
-        pass
+        host = NativeHost(args.engine, args.rom)
+        LocalHandler.backend = host
+
+        def graceful_shutdown(_signum, _frame):
+            # shutdown() must run in a different thread from serve_forever().
+            threading.Thread(target=server.shutdown, daemon=True).start()
+
+        signal.signal(signal.SIGTERM, graceful_shutdown)
+        print(f"OsTIrus Web Nativo en http://127.0.0.1:{args.port}/", flush=True)
+        try:
+            server.serve_forever(poll_interval=0.2)
+        except KeyboardInterrupt:
+            pass
     finally:
         server.server_close()
-        host.stop()
+        if host is not None:
+            host.stop()
 
 
 if __name__ == "__main__":
