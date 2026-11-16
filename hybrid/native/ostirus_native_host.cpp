@@ -7,6 +7,8 @@
 #include "synthLib/midiTypes.h"
 
 #include <algorithm>
+#include <atomic>
+#include <cmath>
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -34,6 +36,10 @@ struct State {
   std::vector<synthLib::SMidiEvent> midiOut;
   std::array<std::array<float, kFrames>, 12> audio{};
   std::array<float, kFrames> silence{};
+  std::atomic<uint64_t> renderedBlocks{0};
+  std::atomic<float> audioPeak{0.0f};
+  std::atomic<unsigned> selectedPair{0};
+  std::atomic<uint64_t> callbackErrors{0};
 };
 
 void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
@@ -51,10 +57,26 @@ void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
     midi.swap(state.pendingMidi);
   }
   state.synth->process(inputs, outputs, kFrames, midi, state.midiOut);
-  for (size_t i = 0; i < kFrames; ++i) {
-    stereo[i * 2] = state.audio[0][i];
-    stereo[i * 2 + 1] = state.audio[1][i];
+  // TI2 provides six stereo pairs. Follow the pair carrying the largest
+  // signal instead of silently discarding channels 3-12.
+  float best = 0.0f;
+  unsigned selected = state.selectedPair.load(std::memory_order_relaxed);
+  for (unsigned pair = 0; pair < 6; ++pair) {
+    float pairPeak = 0.0f;
+    for (size_t i = 0; i < kFrames; ++i) {
+      pairPeak = std::max(pairPeak, std::abs(state.audio[pair * 2][i]));
+      pairPeak = std::max(pairPeak, std::abs(state.audio[pair * 2 + 1][i]));
+    }
+    if (pairPeak > best) { best = pairPeak; selected = pair; }
   }
+  state.selectedPair.store(selected, std::memory_order_relaxed);
+  for (size_t i = 0; i < kFrames; ++i) {
+    stereo[i * 2] = state.audio[selected * 2][i];
+    stereo[i * 2 + 1] = state.audio[selected * 2 + 1][i];
+  }
+  const float oldPeak = state.audioPeak.load(std::memory_order_relaxed);
+  state.audioPeak.store(std::max(best, oldPeak * 0.975f), std::memory_order_relaxed);
+  state.renderedBlocks.fetch_add(1, std::memory_order_relaxed);
 }
 
 bool midiCommand(State& state, const std::string& command) {
@@ -85,7 +107,7 @@ void callback(void* opaque, AudioQueueRef queue, AudioQueueBufferRef buffer) {
   auto& state = *static_cast<State*>(opaque);
   std::array<float, kFrames * 2> stereo{};
   try { renderBlock(state, stereo); }
-  catch (...) { stereo.fill(0.0f); }
+  catch (...) { stereo.fill(0.0f); state.callbackErrors.fetch_add(1, std::memory_order_relaxed); }
   std::memcpy(buffer->mAudioData, stereo.data(), sizeof(stereo));
   buffer->mAudioDataByteSize = static_cast<UInt32>(sizeof(stereo));
   AudioQueueEnqueueBuffer(queue, buffer, 0, nullptr);
@@ -118,6 +140,13 @@ int runAudio(State& state) {
   std::string line;
   while (std::getline(std::cin, line)) {
     if (line == "STOP") break;
+    if (line == "PING") {
+      std::cerr << "[OSTIRUS_HEALTH] blocks=" << state.renderedBlocks.load()
+                << " peak=" << state.audioPeak.load()
+                << " pair=" << state.selectedPair.load()
+                << " errors=" << state.callbackErrors.load() << "\\n";
+      continue;
+    }
     midiCommand(state, line);
   }
   AudioQueueStop(queue, true);
