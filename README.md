@@ -35,3 +35,9 @@ El script `scripts/patch_wasm_runtime.py` aplica guardas transaccionales y repet
 El motor con guardas y colas nuevas compila y se instancia en Node.js. La prueba local con firmware aportado privadamente por el usuario **no recibió respuesta de `gmr_load_rom` dentro de 55 segundos**. Por ello no se ejecutó aún ningún bloque de audio real. Esto puede ser un arranque excepcionalmente lento o un bloqueo: necesita instrumentación para distinguirlos. No se adjunta firmware ni su contenido.
 
 Se añade `scripts/smoke_wasm_node.cjs` a la CI: crea una instancia y verifica que `gmr_process` sin ROM responde `-1`. Su opción `--rom` es solo local, utiliza un Worker con plazo limitado y no imprime ni envía el firmware. **No usar `--rom` en Actions.**
+
+## Nuevo motor híbrido para macOS Apple Silicon
+
+Se ha validado el núcleo TI2 nativo en Linux con una ROM disponible **exclusivamente en un entorno privado**: 153600 frames a 44100 Hz, pico estéreo 0.654, RMS 0.079 y más de 242000 muestras activas; procesó 3.48 segundos de señal en 2.25 segundos de DSP, antes de salida a un dispositivo físico.
+
+Se ha añadido `native/ostirus_native_bridge.cpp` con entrada MIDI por stdin, salida de audio mediante PortAudio/CoreAudio y prueba `--probe` sin tarjeta de sonido. El binario macOS arm64 se construye en CI **sin ROM**. **La reproducción en macOS todavía debe verificarse**: compilar no equivale a ejecutar con un dispositivo real.
