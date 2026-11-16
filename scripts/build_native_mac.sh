@@ -10,6 +10,7 @@ if ! grep -q 'Native OsTIrus hybrid bridge' "$SNAPSHOT/source/CMakeLists.txt"; t
 fi
 cmake -S "$SNAPSHOT" -B "$BUILD" -G 'Unix Makefiles' \
   -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
   -Dgearmulator_BUILD_JUCEPLUGIN=OFF -Dgearmulator_BUILD_JUCEPLUGIN_CLAP=OFF \
   -DASMJIT_NO_CUSTOM_FLAGS=ON
 cmake --build "$BUILD" --target ostirus_native_bridge --parallel 4
