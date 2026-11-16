@@ -1,0 +1,30 @@
+# Firmware propietario: NUNCA versionarlo ni adjuntarlo a CI
+*.bin
+*.rom
+*.ROM
+*.syx
+*.SYX
+*.mid
+*.MID
+*.sf2
+firmware/
+roms/
+ROM/
+private/
+secrets/
+# Descargas y compilaciones
+compilacion/
+build/
+build*/
+dist/
+.cache/
+emsdk/
+ucor-gearmulator-src-*/
+*.tar.xz
+*.wasm
+*.wasm.map
+*.data
+*.log
+__pycache__/
+.pytest_cache/
+.DS_Store
