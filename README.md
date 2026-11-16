@@ -41,3 +41,5 @@ Se añade `scripts/smoke_wasm_node.cjs` a la CI: crea una instancia y verifica q
 Se ha validado el núcleo TI2 nativo en Linux con una ROM disponible **exclusivamente en un entorno privado**: 153600 frames a 44100 Hz, pico estéreo 0.654, RMS 0.079 y más de 242000 muestras activas; procesó 3.48 segundos de señal en 2.25 segundos de DSP, antes de salida a un dispositivo físico.
 
 Se ha añadido `native/ostirus_native_bridge.cpp` con entrada MIDI por stdin, salida de audio mediante PortAudio/CoreAudio y prueba `--probe` sin tarjeta de sonido. El binario macOS arm64 se construye en CI **sin ROM**. **La reproducción en macOS todavía debe verificarse**: compilar no equivale a ejecutar con un dispositivo real.
+
+La compilación alternativa de macOS se ejecuta desde runner Intel y apunta a arm64 con macOS mínimo 11.0. Es una prueba de compilación cruzada y no pretende simular CoreAudio de un Mac Apple Silicon real.
