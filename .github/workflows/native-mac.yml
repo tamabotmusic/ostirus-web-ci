@@ -1,0 +1,51 @@
+name: OsTIrus Native Apple Silicon (sin firmware)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'hybrid/**'
+      - '.github/workflows/native-mac.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-arm64:
+    name: Compilar host TI2 CoreAudio (arm64)
+    runs-on: macos-15
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Comprobar preparación nativa sin ROM
+        run: python -m unittest discover -s hybrid/tests -v
+      - name: Obtener fuentes GPL verificadas
+        run: python scripts/fetch_ucor_source.py --destination source-snapshot.tar.xz
+      - name: Descomprimir fuentes
+        run: tar -xf source-snapshot.tar.xz
+      - name: Preparar compilación nativa
+        run: python hybrid/scripts/prepare_native_headless.py ucor-gearmulator-src-2026-10-07/gearmulator
+      - name: Configurar host nativo
+        run: |
+          cmake -S ucor-gearmulator-src-2026-10-07/gearmulator -B build/native -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_STANDARD=17 \
+            -DOSTIRUS_NATIVE_HOST_SOURCE="$GITHUB_WORKSPACE/hybrid/native/ostirus_native_host.cpp"
+      - name: Compilar
+        run: cmake --build build/native --target ostirus_native_host --parallel 4
+      - name: Verificar arquitectura Apple Silicon y binario
+        run: |
+          test -s build/native/ostirus_native_host
+          file build/native/ostirus_native_host
+          lipo -archs build/native/ostirus_native_host | grep -qw arm64
+          shasum -a 256 build/native/ostirus_native_host
+      - name: Guardar artefacto experimental sin ROM
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-native-macos-arm64-sin-rom
+          path: build/native/ostirus_native_host
+          if-no-files-found: error
+          retention-days: 7
