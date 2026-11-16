@@ -76,7 +76,7 @@ jobs:
     name: Motor nativo TI2 macOS arm64 (sin ROM)
     needs: source-checks
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_macos) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-mac]')) }}
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 65
     steps:
       - uses: actions/checkout@v4
