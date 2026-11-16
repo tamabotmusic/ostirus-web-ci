@@ -13,6 +13,7 @@ permissions:
 jobs:
   native-arm64:
     name: Compilar host TI2 CoreAudio (arm64)
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[native-build]')) }}
     runs-on: macos-15
     timeout-minutes: 65
     steps:
@@ -22,6 +23,10 @@ jobs:
           python-version: "3.12"
       - name: Comprobar preparación nativa sin ROM
         run: python -m unittest discover -s hybrid/tests -v
+      - name: Comprobar sintaxis JavaScript y Python
+        run: |
+          python -m compileall -q hybrid
+          node --check hybrid/ui/app.js
       - name: Obtener fuentes GPL verificadas
         run: python scripts/fetch_ucor_source.py --destination source-snapshot.tar.xz
       - name: Descomprimir fuentes
@@ -48,10 +53,22 @@ jobs:
           file build/native/ostirus_native_host
           lipo -archs build/native/ostirus_native_host | grep -qw arm64
           shasum -a 256 build/native/ostirus_native_host
-      - name: Guardar artefacto experimental sin ROM
+      - name: Empaquetar aplicación local sin firmware
+        run: |
+          mkdir -p dist/OsTIrus_Web_Nativo/bin dist/OsTIrus_Web_Nativo/ui
+          cp build/native/ostirus_native_host dist/OsTIrus_Web_Nativo/bin/
+          cp hybrid/server.py dist/OsTIrus_Web_Nativo/
+          cp hybrid/ui/index.html hybrid/ui/style.css hybrid/ui/app.js dist/OsTIrus_Web_Nativo/ui/
+          cp hybrid/ABRIR_OSTIRUS_WEB.command hybrid/LEEME.md dist/OsTIrus_Web_Nativo/
+          chmod 755 dist/OsTIrus_Web_Nativo/bin/ostirus_native_host
+          chmod 755 dist/OsTIrus_Web_Nativo/ABRIR_OSTIRUS_WEB.command
+          ditto -c -k --keepParent dist/OsTIrus_Web_Nativo dist/OsTIrus_Web_Nativo.zip
+          test -s dist/OsTIrus_Web_Nativo.zip
+          unzip -l dist/OsTIrus_Web_Nativo.zip
+      - name: Guardar paquete experimental completo sin ROM
         uses: actions/upload-artifact@v4
         with:
-          name: ostirus-native-macos-arm64-sin-rom
-          path: build/native/ostirus_native_host
+          name: ostirus-web-nativo-macos
+          path: dist/OsTIrus_Web_Nativo.zip
           if-no-files-found: error
           retention-days: 7
