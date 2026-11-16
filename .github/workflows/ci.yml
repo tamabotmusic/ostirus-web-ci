@@ -4,6 +4,11 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
+      build_macos:
+        description: "Compilar motor nativo TI2 para macOS Apple Silicon"
+        required: false
+        default: false
+        type: boolean
       build_wasm:
         description: "Compilar motor TI2 desde el archivo GPL de μcor"
         required: false
@@ -64,5 +69,39 @@ jobs:
           path: |
             build/wasm/source/wasmApi/ostirus_engine.js
             build/wasm/source/wasmApi/ostirus_engine.wasm
+          if-no-files-found: error
+          retention-days: 7
+
+  build-macos:
+    name: Motor nativo TI2 macOS arm64 (sin ROM)
+    needs: source-checks
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_macos) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-mac]')) }}
+    runs-on: macos-15
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Descargar fuente GPL y verificar SHA-256
+        run: python scripts/fetch_ucor_source.py --destination ucor-gearmulator-src-2026-10-07.tar.xz
+      - name: Descomprimir fuente verificada
+        run: tar -xf ucor-gearmulator-src-2026-10-07.tar.xz
+      - name: Compilar núcleo nativo con PortAudio / CoreAudio
+        run: bash scripts/build_native_mac.sh ucor-gearmulator-src-2026-10-07/gearmulator build/mac-native
+      - name: Verificar que el motor exige firmware local
+        shell: bash
+        run: |
+          test -s build/mac-native/source/ostirus_native_bridge
+          file build/mac-native/source/ostirus_native_bridge | grep -q 'arm64'
+          if build/mac-native/source/ostirus_native_bridge --rom /this/file/does/not/exist.bin --probe >probe.stdout 2>probe.stderr; then
+            echo 'ERROR: motor arrancó sin ROM'; exit 1
+          fi
+          grep -q 'Cannot read ROM file' probe.stderr
+      - name: Publicar solo binario nativo (sin firmware)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-native-macos-arm64-sin-rom
+          path: build/mac-native/source/ostirus_native_bridge
           if-no-files-found: error
           retention-days: 7
