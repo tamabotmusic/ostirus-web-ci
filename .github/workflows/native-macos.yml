@@ -1,0 +1,48 @@
+name: OsTIrus Native macOS (sin firmware)
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  macos-native:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[build-native]') }}
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Descargar código GPL y verificar SHA-256
+        run: python3 scripts/fetch_ucor_source.py --destination ucor-gearmulator-src-2026-10-07.tar.xz
+      - name: Extraer fuente y preparar CMake nativo sin GUI
+        run: |
+          tar -xf ucor-gearmulator-src-2026-10-07.tar.xz
+          python3 scripts/prepare_native_headless.py ucor-gearmulator-src-2026-10-07/gearmulator
+      - name: Configurar CoreAudio para macOS arm64
+        run: |
+          cmake -S ucor-gearmulator-src-2026-10-07/gearmulator -B build/native \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -Dgearmulator_BUILD_JUCEPLUGIN=OFF \
+            -Dgearmulator_BUILD_JUCEPLUGIN_CLAP=OFF \
+            -DSYNTHLIB_DEMO_MODE=OFF \
+            -DOSTIRUS_NATIVE_HOST_SOURCE="$GITHUB_WORKSPACE/native/ostirus_native_host.cpp"
+      - name: Compilar motor TI2 con CoreAudio sin firmware
+        run: cmake --build build/native --target ostirus_native_host --parallel 4
+      - name: Verificar tipo Mach-O arm64 y ejecución sin ROM
+        run: |
+          file build/native/ostirus_native_host
+          lipo -archs build/native/ostirus_native_host | grep -qw arm64
+          test -s build/native/ostirus_native_host
+      - name: Publicar sólo ejecutable libre sin ROM
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-ti2-macos-arm64-sin-rom
+          path: build/native/ostirus_native_host
+          if-no-files-found: error
+          retention-days: 7
