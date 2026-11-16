@@ -144,7 +144,7 @@ int runAudio(State& state) {
       std::cerr << "[OSTIRUS_HEALTH] blocks=" << state.renderedBlocks.load()
                 << " peak=" << state.audioPeak.load()
                 << " pair=" << state.selectedPair.load()
-                << " errors=" << state.callbackErrors.load() << "\\n";
+                << " errors=" << state.callbackErrors.load() << "\n";
       continue;
     }
     midiCommand(state, line);
