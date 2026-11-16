@@ -1,0 +1,64 @@
+name: OsTIrus CI (sin firmware)
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      build_wasm:
+        description: "Compilar motor TI2 desde el archivo GPL de μcor"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  source-checks:
+    name: Pruebas estáticas y seguridad ROM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pruebas de preparación y privacidad
+        run: python -m unittest discover -s tests -v
+      - name: Sintaxis Python
+        run: python -m compileall -q scripts tests
+      - name: Sintaxis shell
+        run: bash -n scripts/build_ti2.sh
+
+  build-wasm:
+    name: Compilar TI2 (sin ROM)
+    needs: source-checks
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_wasm) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[build-wasm]')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Descargar y verificar fuente GPL
+        run: python scripts/fetch_ucor_source.py --destination ucor-gearmulator-src-2026-10-07.tar.xz
+      - name: Descomprimir fuente verificada
+        run: tar -xf ucor-gearmulator-src-2026-10-07.tar.xz
+      - name: Seleccionar TI2 y preparar arranque
+        run: python scripts/prepare_ti2.py ucor-gearmulator-src-2026-10-07
+      - name: Instalar Emscripten 5.0.4
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: "5.0.4"
+          actions-cache-folder: "emsdk-cache"
+      - name: Compilar WebAssembly
+        run: bash scripts/build_ti2.sh ucor-gearmulator-src-2026-10-07/gearmulator build/wasm
+      - name: Publicar solo artefactos del compilador
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-engine-ti2-sin-rom
+          path: |
+            build/wasm/source/wasmApi/ostirus_engine.js
+            build/wasm/source/wasmApi/ostirus_engine.wasm
+          if-no-files-found: error
+          retention-days: 7
