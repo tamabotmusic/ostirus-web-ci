@@ -45,3 +45,11 @@ Se ha añadido `native/ostirus_native_bridge.cpp` con entrada MIDI por stdin, sa
 La compilación alternativa de macOS se ejecuta desde runner Intel y apunta a arm64 con macOS mínimo 11.0. Es una prueba de compilación cruzada y no pretende simular CoreAudio de un Mac Apple Silicon real.
 
 Primera prueba macOS: fallo de configuración CMake por `rmlui_core INTERFACE` tratado como `PUBLIC` en fuente GPL. Se ha añadido una corrección local al script de compilación nativa; se vuelve a probar sin firmware.
+
+## Arquitectura híbrida nativa (prototipo experimental)
+
+Además del motor WASM, el repositorio incorpora dos rutas de investigación para macOS ARM64: `native/ostirus_native_host.cpp` con **CoreAudio** y `native/ostirus_native_bridge.cpp` con **PortAudio**, ambas usando el auténtico `virusLib::DeviceModel::TI2`. Sus fuentes son GPL y no contienen firmware. La preparación headless de CMake está en `scripts/prepare_native_headless.py`, con pruebas de idempotencia.
+
+**Evidencia privada local (no subida a GitHub):** en Linux x86_64 el host CoreAudio/diagnóstico ha sido compilado con su objetivo CMake, y su modo offline procesó notas MIDI reales desde un firmware legítimo. La salida estéreo fue silencio antes de Note On, seguida de una señal con RMS 0,095 y pico 0,568. El JIT nativo puede generar sonido. Esto NO confirma que CoreAudio o el rendimiento de la versión ARM64 estén listos para macOS.
+
+La compilación `.github/workflows/native-macos.yml` genera un ejecutable ARM64 sin ROM. Se debe confirmar su éxito y después validar en un Mac real. La interfaz web y el servidor local se conservan separados del proceso de audio; ninguna ROM se transmite por Internet.
