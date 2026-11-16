@@ -1,0 +1,12 @@
+# Added at end of Gearmulator source/CMakeLists.txt for native host
+if(NOT EMSCRIPTEN)
+  if(NOT TARGET portaudio_static)
+    set(PA_USE_ASIO OFF CACHE BOOL "" FORCE)
+    add_subdirectory(portaudio EXCLUDE_FROM_ALL)
+  endif()
+  add_executable(ostirus_native_bridge "${CMAKE_SOURCE_DIR}/ostirus_native_bridge.cpp")
+  target_compile_features(ostirus_native_bridge PRIVATE cxx_std_17)
+  target_link_libraries(ostirus_native_bridge PRIVATE virusLib portaudio_static)
+  target_compile_definitions(ostirus_native_bridge PRIVATE OSTIRUS_USE_PORTAUDIO=1)
+  target_include_directories(ostirus_native_bridge PRIVATE ${CMAKE_SOURCE_DIR}/source/portaudio/include)
+endif()
