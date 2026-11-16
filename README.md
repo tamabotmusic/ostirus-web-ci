@@ -43,3 +43,5 @@ Se ha validado el núcleo TI2 nativo en Linux con una ROM disponible **exclusiva
 Se ha añadido `native/ostirus_native_bridge.cpp` con entrada MIDI por stdin, salida de audio mediante PortAudio/CoreAudio y prueba `--probe` sin tarjeta de sonido. El binario macOS arm64 se construye en CI **sin ROM**. **La reproducción en macOS todavía debe verificarse**: compilar no equivale a ejecutar con un dispositivo real.
 
 La compilación alternativa de macOS se ejecuta desde runner Intel y apunta a arm64 con macOS mínimo 11.0. Es una prueba de compilación cruzada y no pretende simular CoreAudio de un Mac Apple Silicon real.
+
+Primera prueba macOS: fallo de configuración CMake por `rmlui_core INTERFACE` tratado como `PUBLIC` en fuente GPL. Se ha añadido una corrección local al script de compilación nativa; se vuelve a probar sin firmware.
