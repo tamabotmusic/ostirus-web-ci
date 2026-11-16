@@ -29,8 +29,12 @@ jobs:
           python-version: "3.12"
       - name: Pruebas de preparación y privacidad
         run: python -m unittest discover -s tests -v
+      - name: Pruebas locales del puente MIDI y privacidad
+        run: python -m unittest discover -s hybrid/tests -v
+      - name: Validación JavaScript del panel
+        run: node --check hybrid/ui/app.js
       - name: Sintaxis Python
-        run: python -m compileall -q scripts tests
+        run: python -m compileall -q scripts tests hybrid
       - name: Sintaxis shell
         run: bash -n scripts/build_ti2.sh
 
