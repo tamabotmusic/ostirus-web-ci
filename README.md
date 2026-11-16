@@ -29,3 +29,9 @@ La ejecución de compilación se inicia deliberadamente mediante un mensaje de c
 El script `scripts/patch_wasm_runtime.py` aplica guardas transaccionales y repetibles sobre las fuentes GPL de μcor. Para el TI2, limita a 8192 pares de instrucciones DSP por bloque, evita leer colas de salida vacías, previene desbordamientos de entrada en el modo sin hilos y conserva los eventos MIDI de la API hasta el siguiente procesamiento.
 
 **Es una prueba de aislamiento del bloqueo, no una garantía de sonido.** Aún falta una prueba privada de audio real con ROM aportada localmente y un análisis del coste por bloque; la API pública de compilación no contiene la ROM.
+
+## Diagnóstico 16-11-2026 (firmware privado, NO publicado)
+
+El motor con guardas y colas nuevas compila y se instancia en Node.js. La prueba local con firmware aportado privadamente por el usuario **no recibió respuesta de `gmr_load_rom` dentro de 55 segundos**. Por ello no se ejecutó aún ningún bloque de audio real. Esto puede ser un arranque excepcionalmente lento o un bloqueo: necesita instrumentación para distinguirlos. No se adjunta firmware ni su contenido.
+
+Se añade `scripts/smoke_wasm_node.cjs` a la CI: crea una instancia y verifica que `gmr_process` sin ROM responde `-1`. Su opción `--rom` es solo local, utiliza un Worker con plazo limitado y no imprime ni envía el firmware. **No usar `--rom` en Actions.**
