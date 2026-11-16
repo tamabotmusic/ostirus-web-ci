@@ -23,3 +23,9 @@ Código del emulador: [dsp56300/Gearmulator](https://github.com/dsp56300/gearmul
 ## Primera compilación de prueba
 
 La ejecución de compilación se inicia deliberadamente mediante un mensaje de commit que contenga `[build-wasm]` o el control `Run workflow` de GitHub. Esta compilación **no ejecuta una ROM** ni prueba la generación de sonido; solo verifica que el motor original modificado puede compilarse con Emscripten.
+
+## Fase experimental: tiempo de respuesta DSP
+
+El script `scripts/patch_wasm_runtime.py` aplica guardas transaccionales y repetibles sobre las fuentes GPL de μcor. Para el TI2, limita a 8192 pares de instrucciones DSP por bloque, evita leer colas de salida vacías, previene desbordamientos de entrada en el modo sin hilos y conserva los eventos MIDI de la API hasta el siguiente procesamiento.
+
+**Es una prueba de aislamiento del bloqueo, no una garantía de sonido.** Aún falta una prueba privada de audio real con ROM aportada localmente y un análisis del coste por bloque; la API pública de compilación no contiene la ROM.
