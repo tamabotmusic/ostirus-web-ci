@@ -1,0 +1,29 @@
+/* Coordinate-based panel. Geometry measured against the user's direct front-facing photograph. */
+.ti2-precision-wrap { width:100%; margin:0 auto; max-width:1650px; }
+#ti2-precision {width:100%; overflow:visible; aspect-ratio:1533 / 685;}
+.ti2-photo-svg { display:block; width:100%; height:auto; user-select:none; touch-action:pan-y; }
+.ti2-photo-svg .panel-logo {font-family:Arial,Helvetica,sans-serif;font-size:31px;letter-spacing:-1.2px;font-weight:900;fill:#f1f6f5;}
+.ti2-photo-svg .panel-model {font-family:Arial,Helvetica,sans-serif;font-size:13px;fill:#b7c4c4;font-weight:700;}
+.ti2-photo-svg .connector-text {font-family:Arial,Helvetica,sans-serif;font-size:8px;font-weight:800;fill:#1a2728;letter-spacing:.15px;}
+.ti2-photo-svg .zone-tab {font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;fill:#172126;letter-spacing:.5px;}
+.ti2-photo-svg .section-tab {font-family:Arial,Helvetica,sans-serif;font-size:8px;font-weight:bold;fill:#1f292b;letter-spacing:.2px;}
+.ti2-photo-svg .panel-legend,.ti2-photo-svg .knob-caption,.ti2-photo-svg .button-caption{font-family:Arial,Helvetica,sans-serif;fill:#e1e9e9;font-weight:650;}
+.ti2-photo-svg .knob-caption {font-size:9px;letter-spacing:.1px;}
+.ti2-photo-svg .button-caption {font-size:7px;letter-spacing:.1px;}
+.ti2-photo-svg .panel-micro {font-family:Arial,Helvetica,sans-serif;fill:#cad6d7;font-size:8px;font-weight:650;}
+.ti2-photo-svg .panel-ribbon {font-family:Arial,Helvetica,sans-serif;fill:#f0f3f3;font-weight:750;font-size:8.5px;letter-spacing:.15px;}
+.ti2-photo-svg .indicator-caption {font-family:Arial,Helvetica,sans-serif;fill:#d5dfe0;font-size:8px;font-weight:650;}
+.ti2-photo-svg .ti2-dial-tick {stroke:#cdd8d9;stroke-width:1.5;opacity:.72;}
+.ti2-photo-svg .ti2-knob.control-live {cursor:ns-resize;outline:0;touch-action:none;}
+.ti2-photo-svg .ti2-knob.control-live:focus-visible circle:nth-of-type(2) {stroke:#70d7ec;stroke-width:3.5;}
+.ti2-photo-svg .ti2-knob.control-pending {cursor:default;}
+.ti2-photo-svg .mixer-emblem {font-size:45px;font-weight:900;fill:#7a9b9e;opacity:.72;}
+.ti2-photo-svg .lcd-line {font-family:'Courier New',monospace;font-size:10px;fill:#183f4c;font-weight:700;}
+.ti2-photo-svg .lcd-title {font-family:'Courier New',monospace;font-size:21px;fill:#164057;font-weight:800;}
+.ti2-photo-svg .lcd-logo {font-family:Arial,Helvetica,sans-serif;font-size:16px;fill:#c1d7d9;font-weight:900;}
+.ti2-photo-svg .lcd-tiny {font-family:'Courier New',monospace;font-size:7px;fill:#204555;letter-spacing:-.1px;}
+.ti2-precision-caption {margin:4px 14px 16px;color:#a6bac6;font-size:12px;line-height:1.55;}
+@media (max-width:860px){#ti2-precision{min-width:1000px}.ti2-precision-wrap{overflow-x:auto}.ti2-precision-caption{font-size:11px}}
+
+.ti2-photo-svg .panel-scale {font:650 8px Arial,Helvetica,sans-serif; fill:#cad5d5;}
+.ti2-photo-svg .panel-secondary {font:600 7px Arial,Helvetica,sans-serif; fill:#b3cdcf; opacity:.78;}
