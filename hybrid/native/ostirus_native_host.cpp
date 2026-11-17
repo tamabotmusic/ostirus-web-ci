@@ -3,6 +3,7 @@
 // This executable neither includes nor uploads firmware.
 #include "virusLib/device.h"
 #include "virusLib/deviceModel.h"
+#include "virusLib/frontpanelState.h"
 #include "synthLib/audioTypes.h"
 #include "synthLib/midiTypes.h"
 
@@ -40,6 +41,13 @@ struct State {
   std::atomic<float> audioPeak{0.0f};
   std::atomic<unsigned> selectedPair{0};
   std::atomic<uint64_t> callbackErrors{0};
+  // Only real DSP-derived FrontpanelState events update these atomics.
+  // No locks, SysEx copies or HTTP activity in the CoreAudio callback.
+  std::array<std::atomic<float>, 3> lfoLedLevels{};
+  std::atomic<float> bpmLedLevel{0.0f};
+  std::atomic<float> logoLedLevel{0.0f};
+  std::atomic<uint32_t> midiActivityMask{0};
+  std::atomic<uint64_t> frontpanelRevision{0};
 };
 
 void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
@@ -63,6 +71,26 @@ void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
   // This is audio-thread-local: never read or clear midiOut from the HTTP thread.
   state.midiOut.clear();
   state.synth->process(inputs, outputs, kFrames, midi, state.midiOut);
+  // Read the DSP's already-emitted frontpanel packet. This is NOT a patch
+  // dump: it exposes LFO/BPM/logo indicator levels and MIDI activity only.
+  // FrontpanelState::fromMidiEvent validates the SysEx header and length.
+  virusLib::FrontpanelState frontpanel;
+  for (const auto& event : state.midiOut) {
+    if (!frontpanel.fromMidiEvent(event)) continue;
+    bool finite = std::isfinite(frontpanel.m_bpm) && std::isfinite(frontpanel.m_logo);
+    for (const float level : frontpanel.m_lfoPhases) finite &= std::isfinite(level);
+    if (!finite) continue;
+    uint32_t activity = 0;
+    for (unsigned i = 0; i < frontpanel.m_midiEventReceived.size(); ++i)
+      if (frontpanel.m_midiEventReceived[i]) activity |= (1u << i);
+    for (unsigned i = 0; i < 3; ++i)
+      state.lfoLedLevels[i].store(frontpanel.m_lfoPhases[i], std::memory_order_relaxed);
+    state.bpmLedLevel.store(frontpanel.m_bpm, std::memory_order_relaxed);
+    state.logoLedLevel.store(frontpanel.m_logo, std::memory_order_relaxed);
+    state.midiActivityMask.store(activity, std::memory_order_relaxed);
+    state.frontpanelRevision.fetch_add(1, std::memory_order_release);
+    break;
+  }
   // TI2 provides six stereo pairs. Follow the pair carrying the largest
   // signal instead of silently discarding channels 3-12.
   float best = 0.0f;
@@ -151,6 +179,18 @@ int runAudio(State& state) {
                 << " peak=" << state.audioPeak.load()
                 << " pair=" << state.selectedPair.load()
                 << " errors=" << state.callbackErrors.load() << "\n";
+      const auto revision = state.frontpanelRevision.load(std::memory_order_acquire);
+      if (revision > 0) {
+        // Emit only scalar indicators; never expose raw SysEx, firmware or ROM.
+        std::cerr << "[OSTIRUS_FRONT] revision=" << revision
+                  << " lfo1=" << state.lfoLedLevels[0].load(std::memory_order_relaxed)
+                  << " lfo2=" << state.lfoLedLevels[1].load(std::memory_order_relaxed)
+                  << " lfo3=" << state.lfoLedLevels[2].load(std::memory_order_relaxed)
+                  << " bpm=" << state.bpmLedLevel.load(std::memory_order_relaxed)
+                  << " logo=" << state.logoLedLevel.load(std::memory_order_relaxed)
+                  << " activity=" << state.midiActivityMask.load(std::memory_order_relaxed)
+                  << "\n";
+      }
       continue;
     }
     midiCommand(state, line);
