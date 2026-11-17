@@ -56,6 +56,12 @@ void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
     std::lock_guard<std::mutex> guard(state.midiMutex);
     midi.swap(state.pendingMidi);
   }
+  // Device::process appends MIDI output events (including FrontpanelState) to
+  // the caller-owned vector every audio block. The web host does not consume
+  // MIDI output yet. Reuse the allocation, but discard events from the previous
+  // block before processing to prevent unbounded memory growth over long sets.
+  // This is audio-thread-local: never read or clear midiOut from the HTTP thread.
+  state.midiOut.clear();
   state.synth->process(inputs, outputs, kFrames, midi, state.midiOut);
   // TI2 provides six stereo pairs. Follow the pair carrying the largest
   // signal instead of silently discarding channels 3-12.
