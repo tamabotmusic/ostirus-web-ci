@@ -1,0 +1,136 @@
+name: OsTIrus TI2 v0.9 program controls (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - feature/ti2-controls-v09
+    paths:
+      - 'hybrid/ui/**'
+      - 'hybrid/server.py'
+      - 'hybrid/INSTALAR_CONTROLES_TI2_V09.command'
+      - 'hybrid/LEEME_CONTROLES_TI2_V09.md'
+      - 'hybrid/tests/test_ti2_controls_v09.py'
+      - 'hybrid/ui/ti2-controls-v09.js'
+      - 'hybrid/tests/browser_controls_v09_audit.js'
+      - '.github/workflows/panel-v09-controls.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  program-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: ROM-free source and API regression tests
+        run: |
+          python -m unittest discover -s hybrid/tests -p test_ti2_controls_v08.py -v
+          python -m unittest discover -s hybrid/tests -p test_ti2_controls_v09.py -v
+          python -m unittest discover -s hybrid/tests -p test_ti2_panel.py -v
+          python -m unittest discover -s hybrid/tests -p test_ti2_v07_reference.py -v
+          python -m unittest discover -s hybrid/tests -p test_hybrid.py -v
+          node --check hybrid/ui/app.js
+          node --check hybrid/ui/ti2-precision.js
+          node --check hybrid/ui/ti2-controls-v08.js
+          node --check hybrid/ui/ti2-controls-v09.js
+          node --check hybrid/tests/browser_controls_v09_audit.js
+      - name: Build actual browser preview with simulated local MIDI endpoint
+        run: |
+          cat > hybrid/ti2-v09-preview.html <<'HTML'
+          <!doctype html><html lang="es"><head><meta charset="utf-8">
+          <link rel="stylesheet" href="./ui/ti2-precision.css">
+          <style>html,body{margin:0;background:#151c20}
+          #ti2-precision{width:1533px;height:685px;overflow:hidden}
+          #program,#ti2-precision-edit,#keyboard,#panic,#external,#midiInfo{display:none}
+          </style></head><body>
+          <div id="ti2-precision"></div>
+          <select id="program"></select><div id="keyboard"></div>
+          <button id="panic"></button><button id="external"></button>
+          <p id="midiInfo"></p><p id="ti2-precision-edit"></p>
+          <script>
+          window.__ti2TestMidi=[];
+          window.fetch=(url,options={})=>{
+            if(url==='/api/midi'){
+              window.__ti2TestMidi.push(JSON.parse(options.body));
+              return Promise.resolve({ok:true,json:()=>Promise.resolve({sent:true})});
+            }
+            return Promise.resolve({ok:false});
+          };
+          </script>
+          <script src="./ui/app.js"></script>
+          <script src="./ui/ti2-precision.js"></script>
+          <script src="./ui/ti2-controls-v08.js"></script>
+          <script src="./ui/ti2-controls-v09.js"></script>
+          <script src="./tests/browser_collision_audit.js"></script>
+          <script src="./tests/browser_controls_v09_audit.js"></script>
+          </body></html>
+          HTML
+          BROWSER="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$BROWSER"
+          "$BROWSER" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --window-size=1533,740 --virtual-time-budget=2500 --screenshot="$PWD/ti2-v09-browser-preview.png" "file://$PWD/hybrid/ti2-v09-preview.html"
+          test -s ti2-v09-browser-preview.png
+          "$BROWSER" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=2500 --dump-dom "file://$PWD/hybrid/ti2-v09-preview.html?audit=1" > ti2-v09-browser-dom.html
+          python - <<'PY'
+          import html,json,re
+          from pathlib import Path
+          dom=Path('ti2-v09-browser-dom.html').read_text(encoding='utf-8')
+          def report(id):
+              match=re.search(r'<pre id="'+id+r'"[^>]*>(.*?)</pre>',dom,re.S)
+              assert match, f'Missing browser audit: {id}'
+              return json.loads(html.unescape(match.group(1)))
+          geometry=report('ti2-collision-audit')
+          controls=report('ti2-v09-functional-audit')
+          print('Physical control inventory:',geometry['keyCaps'],'keys')
+          print('Physical text collision checks:',geometry['manualChecks'])
+          print('Functional control checks:',controls['checks'])
+          print('MIDI CC sequence:',controls['ccSent'])
+          assert geometry['keyCaps']==43
+          assert all(geometry['manualChecks'].values()),geometry
+          assert all(controls['checks'].values()),controls
+          assert controls['errors']==[],controls
+          PY
+      - name: Publish preview screenshot only
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-ti2-v09-functional-preview-no-rom
+          path: ti2-v09-browser-preview.png
+          retention-days: 14
+          if-no-files-found: error
+      - name: Assemble reversible UI-only Mac test patch
+        run: |
+          bash -n hybrid/INSTALAR_CONTROLES_TI2_V09.command
+          mkdir -p dist/OsTIrus_TI2_Controles_v09/files/ui
+          cp hybrid/server.py dist/OsTIrus_TI2_Controles_v09/files/server.py
+          for f in index.html app.js style.css ti2-precision.js ti2-precision.css ti2-controls-v08.js ti2-controls-v09.js; do
+            cp "hybrid/ui/$f" "dist/OsTIrus_TI2_Controles_v09/files/ui/$f"
+          done
+          cp hybrid/INSTALAR_CONTROLES_TI2_V09.command dist/OsTIrus_TI2_Controles_v09/
+          cp hybrid/LEEME_CONTROLES_TI2_V09.md dist/OsTIrus_TI2_Controles_v09/
+          chmod +x dist/OsTIrus_TI2_Controles_v09/INSTALAR_CONTROLES_TI2_V09.command
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('dist/OsTIrus_TI2_Controles_v09')
+          files=[x.relative_to(p).as_posix() for x in p.rglob('*') if x.is_file()]
+          assert len(files)==10,files
+          assert all(x.endswith(('.js','.css','.html','.py','.command','.md')) for x in files),files
+          assert not any('bin/' in x or x.lower().endswith(('.bin','.rom','.dmg','.app')) for x in files)
+          print('Verified UI-only package files:',files)
+          PY
+          cd dist
+          zip -qr OsTIrus_TI2_Controles_v09.zip OsTIrus_TI2_Controles_v09
+      - name: Publish reversible Mac UI-only patch (no ROM or engine)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-ti2-v09-ui-only-no-rom
+          path: dist/OsTIrus_TI2_Controles_v09.zip
+          retention-days: 14
+          if-no-files-found: error
+      - name: No firmware or native engine release gate
+        run: |
+          echo 'Only a reversible HTML/CSS/JS/Python UI patch; no native host executable.'
+          test ! -f hybrid/ui/ti2-v09-release-approved.flag
