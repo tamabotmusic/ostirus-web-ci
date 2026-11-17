@@ -57,6 +57,7 @@ class TI2VectorPanelTests(unittest.TestCase):
         self.assertIn("label.length>13?'knob-caption-long'", JS)
         self.assertIn("x:62,y:370,width:356,height:16", JS)
         self.assertIn("x:64,y:498,width:374,height:19", JS)
+        self.assertIn("V508 Q462 526 448 526", JS, "lower selector and effects outline must not merge")
         self.assertIn("'data-ti2-effects-lower-strip':'true'", JS)
         self.assertIn("'data-ti2-effects-lower-connector':'true'", JS)
         self.assertIn("const effectLowerLEDs=[80,150,232,296,363]", JS)
