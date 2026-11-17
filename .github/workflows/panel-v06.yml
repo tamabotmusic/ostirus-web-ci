@@ -1,0 +1,52 @@
+name: OsTIrus TI2 Desktop v0.6 visual preview
+on:
+  push:
+    branches:
+      - feature/ti2-frontpanel-v06
+    paths:
+      - 'hybrid/**'
+      - '.github/workflows/panel-v06.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-preview:
+    name: Verificar y empaquetar nuevo frontal TI2 v0.6
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pruebas servidor/MIDI y dimensiones del frontal
+        run: python -m unittest discover -s hybrid/tests -v
+      - name: Comprobación de sintaxis y seguridad
+        run: |
+          node --check hybrid/ui/app.js
+          node --check hybrid/ui/ti2-v06.js
+          python -m compileall -q hybrid
+          bash -n hybrid/INSTALAR_PANEL_TI2.command
+      - name: Preparar actualización reversible de solo interfaz
+        run: |
+          mkdir -p dist/OsTIrus_Panel_TI2_v06/files/ui
+          cp hybrid/server.py dist/OsTIrus_Panel_TI2_v06/files/
+          cp hybrid/ui/index.html hybrid/ui/app.js hybrid/ui/style.css dist/OsTIrus_Panel_TI2_v06/files/ui/
+          cp hybrid/ui/ti2-v06.js hybrid/ui/ti2-v06.css dist/OsTIrus_Panel_TI2_v06/files/ui/
+          cp hybrid/INSTALAR_PANEL_TI2.command dist/OsTIrus_Panel_TI2_v06/
+          cp hybrid/LEEME_PANEL_TI2.md dist/OsTIrus_Panel_TI2_v06/
+          chmod +x dist/OsTIrus_Panel_TI2_v06/INSTALAR_PANEL_TI2.command
+          if find dist/OsTIrus_Panel_TI2_v06 -type f \( -iname '*.bin' -o -iname '*.rom' -o -iname '*.wasm' -o -iname '*.syx' \) | grep -q .; then
+            echo 'Firmware or executable found in visual patch!' >&2
+            exit 1
+          fi
+          (cd dist && zip -qr OsTIrus_Panel_TI2_v06.zip OsTIrus_Panel_TI2_v06)
+          unzip -l dist/OsTIrus_Panel_TI2_v06.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-ti2-panel-v06-sin-rom
+          path: dist/OsTIrus_Panel_TI2_v06.zip
+          if-no-files-found: error
+          retention-days: 14
