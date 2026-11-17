@@ -217,7 +217,7 @@
 
   // Basic tactile shape; unimplemented buttons deliberately not interactive.
   function drawButton([name,x,y]) {
-    const group=create('g',{class:'ti2-button-group',transform:'translate('+x+' '+y+')'},svg);
+    const group=create('g',{class:'ti2-button-group',transform:'translate('+x+' '+y+')','data-name':name},svg);
     // ~42 px physical keycaps in the photo; the former 36×35 shapes were undersized.
     create('rect',{x:-20.5,y:-21,width:41,height:42,rx:3,fill:'#11181c',stroke:'#97a4a8','stroke-width':.8},group);
     create('rect',{x:-19,y:-19,width:38,height:38,rx:2,fill:'url(#button)',stroke:'#141c20','stroke-width':1},group);
@@ -343,6 +343,7 @@
     lcdState.textContent='';
   };
   selector.addEventListener('change',setPatch);
+  selector.addEventListener('input',setPatch);
   setPatch();
   // Important: knob controls are still output-only. They do not imply reading firmware parameter state.
   const editElement=document.getElementById('ti2-precision-edit');
