@@ -1,0 +1,101 @@
+name: OsTIrus TI2 v0.8 program controls (NO RELEASE)
+
+on:
+  push:
+    branches:
+      - feature/ti2-controls-v08
+    paths:
+      - 'hybrid/ui/**'
+      - 'hybrid/server.py'
+      - 'hybrid/tests/test_ti2_controls_v08.py'
+      - 'hybrid/tests/browser_controls_v08_audit.js'
+      - '.github/workflows/panel-v08-controls.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  program-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: ROM-free source and API regression tests
+        run: |
+          python -m unittest discover -s hybrid/tests -p test_ti2_controls_v08.py -v
+          python -m unittest discover -s hybrid/tests -p test_ti2_panel.py -v
+          python -m unittest discover -s hybrid/tests -p test_ti2_v07_reference.py -v
+          python -m unittest discover -s hybrid/tests -p test_hybrid.py -v
+          node --check hybrid/ui/app.js
+          node --check hybrid/ui/ti2-precision.js
+          node --check hybrid/ui/ti2-controls-v08.js
+          node --check hybrid/tests/browser_controls_v08_audit.js
+      - name: Build actual browser preview with simulated local MIDI endpoint
+        run: |
+          cat > hybrid/ti2-v08-preview.html <<'HTML'
+          <!doctype html><html lang="es"><head><meta charset="utf-8">
+          <link rel="stylesheet" href="./ui/ti2-precision.css">
+          <style>html,body{margin:0;background:#151c20}
+          #ti2-precision{width:1533px;height:685px;overflow:hidden}
+          #program,#ti2-precision-edit,#keyboard,#panic,#external,#midiInfo{display:none}
+          </style></head><body>
+          <div id="ti2-precision"></div>
+          <select id="program"></select><div id="keyboard"></div>
+          <button id="panic"></button><button id="external"></button>
+          <p id="midiInfo"></p><p id="ti2-precision-edit"></p>
+          <script>
+          window.__ti2TestMidi=[];
+          window.fetch=(url,options={})=>{
+            if(url==='/api/midi'){
+              window.__ti2TestMidi.push(JSON.parse(options.body));
+              return Promise.resolve({ok:true,json:()=>Promise.resolve({sent:true})});
+            }
+            return Promise.resolve({ok:false});
+          };
+          </script>
+          <script src="./ui/app.js"></script>
+          <script src="./ui/ti2-precision.js"></script>
+          <script src="./ui/ti2-controls-v08.js"></script>
+          <script src="./tests/browser_collision_audit.js"></script>
+          <script src="./tests/browser_controls_v08_audit.js"></script>
+          </body></html>
+          HTML
+          BROWSER="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$BROWSER"
+          "$BROWSER" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --window-size=1533,740 --virtual-time-budget=2500 --screenshot="$PWD/ti2-v08-browser-preview.png" "file://$PWD/hybrid/ti2-v08-preview.html"
+          test -s ti2-v08-browser-preview.png
+          "$BROWSER" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=2500 --dump-dom "file://$PWD/hybrid/ti2-v08-preview.html?audit=1" > ti2-v08-browser-dom.html
+          python - <<'PY'
+          import html,json,re
+          from pathlib import Path
+          dom=Path('ti2-v08-browser-dom.html').read_text(encoding='utf-8')
+          def report(id):
+              match=re.search(r'<pre id="'+id+r'"[^>]*>(.*?)</pre>',dom,re.S)
+              assert match, f'Missing browser audit: {id}'
+              return json.loads(html.unescape(match.group(1)))
+          geometry=report('ti2-collision-audit')
+          controls=report('ti2-v08-functional-audit')
+          print('Physical control inventory:',geometry['keyCaps'],'keys')
+          print('Physical text collision checks:',geometry['manualChecks'])
+          print('Functional control checks:',controls['checks'])
+          print('MIDI program sequence:',controls['programsSent'])
+          assert geometry['keyCaps']==43
+          assert all(geometry['manualChecks'].values()),geometry
+          assert all(controls['checks'].values()),controls
+          assert controls['errors']==[],controls
+          PY
+      - name: Publish preview screenshot only
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-ti2-v08-functional-preview-no-rom
+          path: ti2-v08-browser-preview.png
+          retention-days: 14
+          if-no-files-found: error
+      - name: No firmware and no installer gate
+        run: |
+          echo 'Experimental UI control layer only; no native host release.'
+          test ! -f hybrid/ui/ti2-v08-release-approved.flag
