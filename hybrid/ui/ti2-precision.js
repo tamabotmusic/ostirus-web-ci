@@ -68,15 +68,15 @@
   engrave('M1109 111 V623');
   // The original has no strong partition lines separating MATRIX, MODULATORS and OSCILLATORS.
   // Distinctive asymmetrical ARP and effects surround.
-  engrave('M166 111 H174 V223 Q174 239 159 239 H50 Q42 239 42 249 V332 Q42 341 51 341 H1008',1.6);
-  engrave('M48 353 H453 Q462 353 462 362 V485 Q462 497 450 497 H365');
+  engrave('M164 111 V223 Q164 239 150 239 H50 Q42 239 42 249 V332 Q42 341 51 341 H1008',1.6);
+  engrave('M48 353 H453 Q462 353 462 362 V500 Q462 518 448 518 H353 Q339 518 336 535 L333 622');
   engrave('M48 353 Q40 353 40 365 V607 Q40 622 53 622 H333');
-  engrave('M334 613 Q340 518 353 518 H462');
+  // The notch is joined to the upper contour and the lower perimeter at (333,622).
   engrave('M1109 367 H1503 Q1514 367 1514 380 V472 Q1514 482 1504 482 H1109');
   engrave('M1109 508 H1503 Q1514 508 1514 520 V611 Q1514 622 1504 622 H1109');
   // Black recessed filter-mode and effect-selection bars are added as graphics.
-  create('rect',{x:172,y:356,width:245,height:16,rx:1,fill:'#111719',opacity:'.7'},svg);
-  create('rect',{x:172,y:487,width:245,height:15,rx:1,fill:'#111719',opacity:'.65'},svg);
+  create('rect',{x:62,y:370,width:356,height:16,rx:1,fill:'#111719',opacity:'.7'},svg);
+  create('rect',{x:62,y:499,width:356,height:15,rx:1,fill:'#111719',opacity:'.65'},svg);
   // A subtle Mixer emblem guide replaces artificial section cards.
   const sectionTabs = [
     [167,97,'MATRIX'],[289,97,'MODULATORS'],[603,97,'OSCILLATORS'],
@@ -89,9 +89,8 @@
     txt(svg,x+7,y+10,label,'section-tab');
   }
 
-  // Original's irregular Volume/ARP plate, not a boxed card.
-  create('path',{d:'M163 111 Q169 111 169 118 V225 Q168 233 154 234 H50 Q41 234 41 246 V330 Q41 340 51 340 H166',
-    fill:'none',stroke:'#b4c5c6','stroke-width':1.6},svg);
+  // Single physical ARP/MATRIX divider. The former duplicate crossed the ARP tab.
+  // Do not draw a second parallel outline over the shared hardware contour.
   create('rect',{x:45,y:224,width:65,height:16,rx:4,fill:'#aebfc1',opacity:'.8'},svg);
   txt(svg,50,236,'ARP','section-mini');
 
@@ -152,7 +151,13 @@
     paint();
     const hasRibbon = (y===161 && x>=594 && x<990) ||
       (y===160 && ['RESONANCE','ENV AMOUNT'].includes(label));
-    if (!hasRibbon) txt(svg,x,y+r+(label.startsWith('VALUE ')?27:14),label,'knob-caption',{'text-anchor':'middle'});
+    if (!hasRibbon) {
+      // Keep silkscreen inside the photo's section borders; long captions use a smaller face.
+      const captionY=(y===563 && x>=1100)?y+r+12:y+r+(label.startsWith('VALUE ')?27:14);
+      const captionX=label==='FILTER BALANCE'?1462:x;
+      const captionClass=label.length>13?'knob-caption-long':'knob-caption';
+      txt(svg,captionX,captionY,label,captionClass,{'text-anchor':'middle'});
+    }
     if(label!=='VOLUME') {
       const bipolar=['SEMITONE','FILTER BALANCE','CUTOFF 2'].includes(label);
       txt(svg,x-r+1,y+r+5,bipolar?'-48':'0','panel-scale');
@@ -231,10 +236,10 @@
   ['FILT 1','FILT 2'].forEach((s,i)=>indicator(1420+i*51,240,s));
   ['DELAY','REVERB','LOW EQ','MID EQ','HIGH EQ'].forEach((s,i)=>indicator(67+i*85,380,s));
   ['DISTORTION','CHARACTER','CHORUS','PHASER','OTHERS'].forEach((s,i)=>indicator(67+i*85,500,s));
-  ['WAVE','PW','RESONANCE','FLT GAIN','ASSIGN'].forEach((s,i)=>indicator(458,141+i*17,s));
+  ['WAVE','PW','RESO','FILT GAIN','ASSIGN'].forEach((s,i)=>indicator(458,141+i*17,s));
   ['OSC 1','OSC 2/3','CUTOFF','SHAPE','FM AMT','PAN'].forEach((s,i)=>indicator(347,233+i*18,s));
-  txt(svg,212,140,'DEMOSONG','panel-micro',{'text-anchor':'middle'});
-  txt(svg,212,150,'PRESS + HOLD','panel-micro',{'text-anchor':'middle'});
+  txt(svg,212,132,'DEMOSONG','panel-micro',{'text-anchor':'middle'});
+  txt(svg,212,144,'PRESS + HOLD','panel-micro',{'text-anchor':'middle'});
   txt(svg,212,217,'DESTINATION','panel-micro',{'text-anchor':'middle'});
   txt(svg,194,258,'MOD','panel-micro',{'text-anchor':'middle'});
   for(const [x,label] of [[310,'LFO 1'],[421,'LFO 2'],[541,'LFO 3']]){
@@ -269,15 +274,17 @@
     [947,333,'FM MODE'],[1057,222,'PANORAMA'],[1057,333,'OSC 3 VOLUME'],
     [1057,494,'SATURATION TYPE'],[1057,612,'RING MODULATOR'],
     [1281,225,'RESONANCE 2'],[1378,225,'KEY FOLLOW'],
-    [185,495,'EQ GAIN'],[292,495,'EQ FREQ'],[392,495,'EQ Q-FACTOR'],
-    [1177,620,'PATCH VOLUME'],[1378,478,'SUSTAIN SLOPE'],
-    [1378,620,'SUSTAIN SLOPE'],[1478,620,'TEMPO'],
+    [185,490,'EQ GAIN'],[292,490,'EQ FREQ'],[392,490,'EQ Q-FACTOR'],
+    [1177,613,'PATCH VOLUME'],[1378,472,'SUSTAIN SLOPE'],
+    [1378,613,'SUSTAIN SLOPE'],[1478,613,'TEMPO'],
   ]) txt(svg,x,y,label,'panel-secondary',{'text-anchor':'middle'});
   // Physical UI references: effect SELECT / EDIT operate on two shared knob rows.
   txt(svg,124,330,'HOLD','panel-micro',{'text-anchor':'middle'});
-  txt(svg,952,407,'PART','panel-micro',{'text-anchor':'middle'});
-  txt(svg,952,548,'PARAMETERS','panel-micro',{'text-anchor':'middle'});
-  txt(svg,952,629,'VALUE / PROGRAM','panel-micro',{'text-anchor':'middle'});
+  txt(svg,952,411,'PART','panel-micro',{'text-anchor':'middle'});
+  txt(svg,952,553,'PARAMETERS','panel-micro',{'text-anchor':'middle'});
+  txt(svg,952,562,'BANK','panel-secondary',{'text-anchor':'middle'});
+  txt(svg,952,623,'VALUE','panel-micro',{'text-anchor':'middle'});
+  txt(svg,952,634,'PROGRAM','panel-secondary',{'text-anchor':'middle'});
 
 
   // LCD is a physical screen. Readout mirrors the already working Program Change selector.
