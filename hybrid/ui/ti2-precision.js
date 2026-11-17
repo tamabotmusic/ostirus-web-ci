@@ -252,7 +252,7 @@
   });
   ['WAVE','CUTOFF 1','CUTOFF 2','SHAPE','FM AMT','PAN','ASSIGN']
     .forEach((label,i)=>indicator(458,233+i*17,label));
-  ['OSC 1','OSC 2/3','CUTOFF','SHAPE','FM AMT','PAN'].forEach((s,i)=>indicator(347,233+i*18,s));
+  ['OSC 1','OSC 2/3','PW','RESO','FILT GAIN','ASSIGN'].forEach((s,i)=>indicator(347,233+i*18,s));
   txt(svg,212,132,'DEMOSONG','panel-micro',{'text-anchor':'middle'});
   txt(svg,212,144,'PRESS + HOLD','panel-micro',{'text-anchor':'middle'});
   txt(svg,212,217,'DESTINATION','panel-micro',{'text-anchor':'middle'});
