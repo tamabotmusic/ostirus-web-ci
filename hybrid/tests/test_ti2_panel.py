@@ -26,11 +26,11 @@ class TI2VectorPanelTests(unittest.TestCase):
                         "WAVE SELECT/PW","FM AMOUNT","FILTER BALANCE","CUTOFF 2",
                         "VALUE 1","VALUE 2","VALUE 3","SHAPE","ENV MODE"):
             self.assertIn(legend,JS)
-        self.assertIn("M1008 111 V615",JS)
+        self.assertIn("M1008 111 V623",JS)
         self.assertIn("['TRANS −',386,588]",JS)
         self.assertIn("['FILTER SELECT LEFT',1432,288]",JS)
         self.assertIn("['FILTER SELECT RIGHT',1477,288]",JS)
-        self.assertIn("M1109 111 V615",JS)
+        self.assertIn("M1109 111 V623",JS)
     def test_routing_and_status_are_honest(self):
         self.assertRegex(JS,r"\['VOLUME',79,155,31,null\]")
         self.assertIn("control-pending",JS)
