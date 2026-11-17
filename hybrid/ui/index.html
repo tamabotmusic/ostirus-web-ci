@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#121720">
   <title>OsTIrus Web — TI2 Nativo</title>
   <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./ti2-v06.css">
+  <link rel="stylesheet" href="./ti2-precision.css">
   <script defer src="./app.js"></script>
-  <script defer src="./ti2-v06.js"></script>
+  <script defer src="./ti2-precision.js"></script>
 </head>
 <body>
   <main class="shell">
@@ -22,16 +22,15 @@
     <section class="studio-intro">
       <div>
         <div class="eyebrow">OSTIRUS / HARDWARE PANEL • TI2 DESKTOP</div>
-        <p>Panel diseñado para respetar la organización física del Virus TI2 Desktop. Los mandos conectados envían CC al motor; los pulsadores aún no implementados se muestran únicamente como referencias.</p>
+        <p>Reconstrucción geométrica del Virus TI2 Desktop negro: distribución medida, rotulación según manual y revisión fotográfica todavía en curso.</p>
       </div>
-      <span class="prototype-tag">PANEL v0.6 · REFERENCIA TI2</span>
+      <span class="prototype-tag">PANEL v0.7 · COMPARACIÓN ESTRICTA</span>
     </section>
 
-    <div class="v06-viewport" aria-label="OsTIrus TI2 Desktop frontal completo" tabindex="0">
-      <section id="ti2-v06" class="v06-panel" aria-label="OsTIrus TI2 Desktop: 32 mandos y 42 botones físicos"></section>
+    <div class="ti2-precision-wrap" aria-label="Referencia vectorial OsTIrus TI2 Desktop">
+      <div id="ti2-precision" aria-label="Panel delantero TI2 recreado con coordenadas de referencia"></div>
     </div>
-
-    <p class="v06-caption">Panel experimental de referencia hardware TI2 Desktop. Los 42 botones se reproducen visualmente; las funciones sin integrar no se pueden pulsar. Los mandos MIDI CC sí controlan el motor nativo, pero su posición no refleja aún el valor de cada patch.</p>
+    <p class="ti2-precision-caption" id="ti2-precision-edit">32 mandos · 42 botones · Posiciones medidas sobre una fotografía frontal del TI2. Comparación visual todavía no aprobada.</p>
 
     <p class="panel-legend">Gira los mandos arrastrando verticalmente, con la rueda o usando las flechas del teclado. Los parámetros que todavía no admiten lectura desde el firmware no muestran el valor original del patch.</p>
 
