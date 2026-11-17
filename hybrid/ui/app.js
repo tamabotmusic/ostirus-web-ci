@@ -187,7 +187,10 @@ function onMidiMessage(event) {
       noteOff(data1);
       break;
     case 0xb0:
-      sendMidi({ type: "cc", controller: data1, value: data2 }).catch(() => {});
+      sendMidi({ type: "cc", controller: data1, value: data2 })
+        .then(() => window.dispatchEvent(new CustomEvent("ti2-local-midi-cc", {
+          detail: { controller: data1, value: data2 },
+        }))).catch(() => showMidiError("No se pudo reenviar el CC MIDI"));
       break;
     case 0xc0:
       selectProgram(data1);

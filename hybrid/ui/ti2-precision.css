@@ -39,3 +39,6 @@
 .ti2-photo-svg .ti2-button-group.control-live:active rect:first-child {stroke:#8fdae8;stroke-width:1.5;}
 .ti2-photo-svg .ti2-button-group.control-live:focus-visible {outline:none;}
 .ti2-photo-svg .ti2-button-group.control-live:focus-visible rect:first-child {stroke:#8fdae8;stroke-width:2;}
+
+/* v0.9: red means LOCAL focus chosen by the user, never a firmware report. */
+.ti2-photo-svg circle[data-state="local"]{fill:#ec4566;stroke:#f6a4b2;filter:drop-shadow(0 0 2.5px #ed385b);}
