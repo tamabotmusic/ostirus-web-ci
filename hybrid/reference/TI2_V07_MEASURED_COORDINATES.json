@@ -1,0 +1,469 @@
+{
+  "schema": "ostirus-panel-geometry-v07",
+  "reference": "User-provided original black TI2 Desktop photo",
+  "reference_frame": {
+    "width": 1533,
+    "height": 685,
+    "unit": "px"
+  },
+  "status": "photo overlay corrected 2026-11-17; full browser render and final visual approval pending",
+  "knobs": [
+    {
+      "label": "VOLUME",
+      "x": 79,
+      "y": 155,
+      "r": 31,
+      "cc": null
+    },
+    {
+      "label": "RATE",
+      "x": 531,
+      "y": 162,
+      "r": 27,
+      "cc": 67
+    },
+    {
+      "label": "WAVE",
+      "x": 638,
+      "y": 161,
+      "r": 28,
+      "cc": 17
+    },
+    {
+      "label": "WAVE SELECT/PW",
+      "x": 742,
+      "y": 161,
+      "r": 28,
+      "cc": 19
+    },
+    {
+      "label": "SEMITONE",
+      "x": 843,
+      "y": 161,
+      "r": 28,
+      "cc": 20
+    },
+    {
+      "label": "DETUNE 2/3",
+      "x": 947,
+      "y": 161,
+      "r": 28,
+      "cc": 26
+    },
+    {
+      "label": "FM AMOUNT",
+      "x": 947,
+      "y": 280,
+      "r": 27,
+      "cc": 27
+    },
+    {
+      "label": "OSC BALANCE",
+      "x": 1057,
+      "y": 161,
+      "r": 29,
+      "cc": 33
+    },
+    {
+      "label": "SUB OSC VOLUME",
+      "x": 1057,
+      "y": 276,
+      "r": 29,
+      "cc": 34
+    },
+    {
+      "label": "OSC VOLUME",
+      "x": 1057,
+      "y": 443,
+      "r": 29,
+      "cc": 36
+    },
+    {
+      "label": "NOISE VOLUME",
+      "x": 1057,
+      "y": 557,
+      "r": 29,
+      "cc": 37
+    },
+    {
+      "label": "CUTOFF",
+      "x": 1179,
+      "y": 160,
+      "r": 28,
+      "cc": 40
+    },
+    {
+      "label": "RESONANCE",
+      "x": 1281,
+      "y": 160,
+      "r": 28,
+      "cc": 42
+    },
+    {
+      "label": "ENV AMOUNT",
+      "x": 1378,
+      "y": 160,
+      "r": 28,
+      "cc": 44
+    },
+    {
+      "label": "FILTER BALANCE",
+      "x": 1480,
+      "y": 160,
+      "r": 27,
+      "cc": 48
+    },
+    {
+      "label": "CUTOFF 2",
+      "x": 1179,
+      "y": 280,
+      "r": 27,
+      "cc": 41
+    },
+    {
+      "label": "SEND",
+      "x": 185,
+      "y": 436,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "TIME/COLOR",
+      "x": 292,
+      "y": 436,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "FEEDBACK/DAMPING",
+      "x": 392,
+      "y": 436,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "TYPE/MIX",
+      "x": 185,
+      "y": 564,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "INTENSITY",
+      "x": 292,
+      "y": 564,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "VALUE 1",
+      "x": 634,
+      "y": 563,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "VALUE 2",
+      "x": 734,
+      "y": 563,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "VALUE 3",
+      "x": 831,
+      "y": 563,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "FILTER ENV ATTACK",
+      "x": 1177,
+      "y": 417,
+      "r": 28,
+      "cc": 54
+    },
+    {
+      "label": "FILTER ENV DECAY",
+      "x": 1275,
+      "y": 417,
+      "r": 28,
+      "cc": 55
+    },
+    {
+      "label": "FILTER ENV SUSTAIN",
+      "x": 1377,
+      "y": 417,
+      "r": 28,
+      "cc": 56
+    },
+    {
+      "label": "FILTER ENV RELEASE",
+      "x": 1478,
+      "y": 417,
+      "r": 28,
+      "cc": 58
+    },
+    {
+      "label": "AMP ENV ATTACK",
+      "x": 1177,
+      "y": 563,
+      "r": 28,
+      "cc": 59
+    },
+    {
+      "label": "AMP ENV DECAY",
+      "x": 1275,
+      "y": 563,
+      "r": 28,
+      "cc": 60
+    },
+    {
+      "label": "AMP ENV SUSTAIN",
+      "x": 1377,
+      "y": 563,
+      "r": 28,
+      "cc": 61
+    },
+    {
+      "label": "AMP ENV RELEASE",
+      "x": 1478,
+      "y": 563,
+      "r": 28,
+      "cc": 63
+    }
+  ],
+  "buttons": [
+    {
+      "label": "ARP EDIT",
+      "x": 83,
+      "y": 288
+    },
+    {
+      "label": "ARP ON",
+      "x": 127,
+      "y": 288
+    },
+    {
+      "label": "DEST 1",
+      "x": 194,
+      "y": 175
+    },
+    {
+      "label": "DEST 2",
+      "x": 237,
+      "y": 175
+    },
+    {
+      "label": "MOD SELECT",
+      "x": 194,
+      "y": 289
+    },
+    {
+      "label": "MOD EDIT",
+      "x": 314,
+      "y": 175
+    },
+    {
+      "label": "ENV MODE",
+      "x": 359,
+      "y": 175
+    },
+    {
+      "label": "SHAPE",
+      "x": 427,
+      "y": 175
+    },
+    {
+      "label": "LFO 1 SELECT",
+      "x": 314,
+      "y": 288
+    },
+    {
+      "label": "LFO 2 SELECT",
+      "x": 425,
+      "y": 288
+    },
+    {
+      "label": "LFO 3 SELECT",
+      "x": 545,
+      "y": 288
+    },
+    {
+      "label": "OSC SELECT",
+      "x": 625,
+      "y": 288
+    },
+    {
+      "label": "OSC EDIT",
+      "x": 667,
+      "y": 288
+    },
+    {
+      "label": "OSC 3 ON",
+      "x": 710,
+      "y": 288
+    },
+    {
+      "label": "MONO",
+      "x": 824,
+      "y": 288
+    },
+    {
+      "label": "SYNC",
+      "x": 866,
+      "y": 288
+    },
+    {
+      "label": "FILTER EDIT",
+      "x": 1244,
+      "y": 288
+    },
+    {
+      "label": "FILTER 1",
+      "x": 1286,
+      "y": 288
+    },
+    {
+      "label": "FILTER 2",
+      "x": 1390,
+      "y": 288
+    },
+    {
+      "label": "FILTER SELECT LEFT",
+      "x": 1432,
+      "y": 288
+    },
+    {
+      "label": "FILTER SELECT RIGHT",
+      "x": 1477,
+      "y": 288
+    },
+    {
+      "label": "FX TOP SELECT",
+      "x": 83,
+      "y": 445
+    },
+    {
+      "label": "FX TOP EDIT",
+      "x": 127,
+      "y": 445
+    },
+    {
+      "label": "FX BOTTOM SELECT",
+      "x": 83,
+      "y": 568
+    },
+    {
+      "label": "FX BOTTOM EDIT",
+      "x": 127,
+      "y": 568
+    },
+    {
+      "label": "EXIT",
+      "x": 501,
+      "y": 381
+    },
+    {
+      "label": "TAP",
+      "x": 545,
+      "y": 381
+    },
+    {
+      "label": "MASTER EDIT",
+      "x": 501,
+      "y": 456
+    },
+    {
+      "label": "CONFIG",
+      "x": 545,
+      "y": 456
+    },
+    {
+      "label": "STORE",
+      "x": 501,
+      "y": 522
+    },
+    {
+      "label": "UNDO",
+      "x": 545,
+      "y": 522
+    },
+    {
+      "label": "SHIFT",
+      "x": 501,
+      "y": 588
+    },
+    {
+      "label": "SEARCH",
+      "x": 545,
+      "y": 588
+    },
+    {
+      "label": "PART -",
+      "x": 935,
+      "y": 381
+    },
+    {
+      "label": "PART +",
+      "x": 977,
+      "y": 381
+    },
+    {
+      "label": "MULTI",
+      "x": 935,
+      "y": 456
+    },
+    {
+      "label": "SINGLE",
+      "x": 977,
+      "y": 456
+    },
+    {
+      "label": "PARAM -",
+      "x": 935,
+      "y": 522
+    },
+    {
+      "label": "PARAM +",
+      "x": 977,
+      "y": 522
+    },
+    {
+      "label": "VALUE -",
+      "x": 935,
+      "y": 588
+    },
+    {
+      "label": "VALUE +",
+      "x": 977,
+      "y": 588
+    },
+    {
+      "label": "TRANS -",
+      "x": 386,
+      "y": 588
+    },
+    {
+      "label": "TRANS +",
+      "x": 428,
+      "y": 588
+    }
+  ],
+  "notes": [
+    "Coordinates were independently measured against the black TI2 panel photograph, not the earlier silver TI photo.",
+    "Images and firmware remain strictly local and are not included in GitHub.",
+    "This reference is an implementation aid, not certified pixel-exact.",
+    "32 knobs/42 tactile keys checked against physical layout and official Virus TI User Manual, especially First Steps pages 21–45.",
+    "Patch positions/LED indicators cannot claim synchronization without reading real state.",
+    "The black TI2 photo contains 43 distinct rectangular key caps, including two adjacent FILTER SELECT caps. Previous 42-cap inventory omitted one.",
+    "TRANSPOSE pair y was 565 in source-space, now 588 (approximately 23 photo pixels lower)."
+  ],
+  "coordinate_transform": {
+    "translate_x": -30,
+    "translate_y": -20,
+    "scale_x": 1.018,
+    "scale_y": 1.017,
+    "description": "Apply to all source-space x,y for black-photo pixel alignment"
+  }
+}
