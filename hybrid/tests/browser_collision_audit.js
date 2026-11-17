@@ -40,7 +40,23 @@
   const filterBalance=byText('FILTER BALANCE');
   const rate={x:504,y:135,w:54,h:54};
   const reso=byText('RESO');
+  const lowerBand=svg.querySelector('[data-ti2-effects-lower-strip]');
+  const lowerLEDs=[...svg.querySelectorAll('[data-ti2-effects-lower-led]')];
+  const lowerLabels=[...svg.querySelectorAll('[data-ti2-effects-lower-label]')];
+  const lowerBandBounds=lowerBand?.getBBox();
+  const lowerBandClear=!!lowerBandBounds && lowerLEDs.length===5 && lowerLabels.length===5 &&
+    lowerLEDs.every(c=>{
+      const x=Number(c.getAttribute('cx')),y=Number(c.getAttribute('cy'));
+      return x-3.4>lowerBandBounds.x+2 && x+3.4<lowerBandBounds.x+lowerBandBounds.width-2 &&
+        y-3.4>lowerBandBounds.y+2 && y+3.4<lowerBandBounds.y+lowerBandBounds.height-2;
+    }) &&
+    lowerLabels.every(t=>{
+      const b=t.getBBox();
+      return b.x>lowerBandBounds.x+2 && b.x+b.width<lowerBandBounds.x+lowerBandBounds.width-2 &&
+        b.y>lowerBandBounds.y+2 && b.y+b.height<lowerBandBounds.y+lowerBandBounds.height-2;
+    });
   const manualChecks={
+    lower_effects_strip_contains_all_leds_and_legends:lowerBandClear,
     physical_caps_clear:collisions.length===0,
     mod_reso_clear:reso.length===1 && !overlaps(reso[0],rate),
     lfo_waveform_symbols:svg.querySelectorAll('[data-ti2-waveform]').length===4,
