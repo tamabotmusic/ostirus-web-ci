@@ -26,6 +26,7 @@ Date: 17 November 2026. **Reference only — no installer and no release.**
 6. **MASTER RIGHT**: place PART and PARAMETERS/BANK labels between physical rows; split VALUE and PROGRAM into two distinct legends below the last pair.
 7. **FILTER/AMPLIFIER ENVELOPES**: lift secondary legends from the border line, retaining PATCH VOLUME, SUSTAIN SLOPE and TEMPO. Adjust lower scale digits to avoid touching RELEASE.
 8. **LCD**: separate SINGLE status and PROGRAM title, which had overlapping text bounding boxes in the actual Chromium DOM.
+9. **EFFECTS lower selector (owner follow-up)**: replace the misaligned dark stripe *below* DISTORTION/CHARACTER/CHORUS/PHASER/OTHERS with the original's recessed silver-outlined strip; position each of the five LEDs and captions fully inside it using measured nonuniform centers, and restore its hairline to SELECT. Lower the adjacent EFFECTS section contour so its line stays separate from the selector border. Preserve all other zones.
 
 ## Validation gate
 - Static regression tests assert the exact corrected text/contour patterns.
