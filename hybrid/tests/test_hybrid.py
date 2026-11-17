@@ -55,6 +55,7 @@ for line in sys.stdin:
     line=line.strip()
     if line=="PING":
         print("[OSTIRUS_HEALTH] blocks=25 peak=0.1234 pair=1 errors=0", file=sys.stderr, flush=True)
+        print("[OSTIRUS_FRONT] revision=23 lfo1=0.2 lfo2=0.4 lfo3=0.8 bpm=0.3 logo=0.9 activity=3", file=sys.stderr, flush=True)
     elif line=="STOP":
         break
 """
@@ -106,6 +107,28 @@ class LocalHTTPTests(unittest.TestCase):
         self.assertEqual(state["peak"], 0.1234)
         self.assertEqual(state["stereoPair"], 2)
         self.assertNotIn("private-test-firmware.bin", json.dumps(state))
+
+    def test_dsp_frontpanel_feedback_is_real_or_absent(self):
+        deadline = time.monotonic() + 3
+        state = {}
+        while time.monotonic() < deadline:
+            state = json.load(self.request("/api/status"))
+            if state["dspFrontpanel"] is not None:
+                break
+            time.sleep(0.1)
+        front = state["dspFrontpanel"]
+        self.assertIsNotNone(front)
+        self.assertEqual(front["source"], "dsp-frontpanel")
+        self.assertEqual(front["revision"], 23)
+        self.assertEqual(front["lfoLedLevels"], [0.2, 0.4, 0.8])
+        self.assertEqual(front["midiActivityMask"], 3)
+        self.assertLess(front["ageSeconds"], 3)
+        self.assertNotIn("patch", json.dumps(front).lower())
+        self.assertNotIn("sysex", json.dumps(front).lower())
+        # A feedback packet older than three seconds is not presented as live.
+        with self.backend._state_lock:
+            self.backend.last_frontpanel = time.monotonic() - 10
+        self.assertIsNone(self.backend.status()["dspFrontpanel"])
 
     def test_valid_midi_sent(self):
         data = json.load(self.request("/api/midi", method="POST", data={"type": "note_on", "note": 60, "velocity": 94}))
