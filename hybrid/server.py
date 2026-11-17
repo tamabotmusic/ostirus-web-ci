@@ -184,6 +184,8 @@ class LocalHandler(BaseHTTPRequestHandler):
             "/index.html": ("index.html", "text/html; charset=utf-8"),
             "/app.js": ("app.js", "text/javascript; charset=utf-8"),
             "/style.css": ("style.css", "text/css; charset=utf-8"),
+            "/ti2-panel.css": ("ti2-panel.css", "text/css; charset=utf-8"),
+            "/ti2-panel.js": ("ti2-panel.js", "text/javascript; charset=utf-8"),
         }
         entry = files.get(path)
         if not entry:
