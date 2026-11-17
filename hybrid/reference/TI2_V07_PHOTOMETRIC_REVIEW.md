@@ -26,16 +26,18 @@ Neither source photograph nor full manual nor ROM is included in this repository
 - Increased cap dimensions from 36×35 to 41×42 source units to match the photo more closely.
 - The coordinate overlay is a **geometry review**, not a pixel-perfect browser render or final approval.
 
-## Latest local automated visual check
-- Browser JavaScript exceptions: **0**.
-- SVG rotary groups: **32**.
-- SVG tactile button groups: **43** after geometry correction; browser re-render still pending.
-- Distinct SVG text/text intersections above 38% of smaller text area: **0** after fixes.
-- **Not yet an approval:** this only checks the control counts and gross typographic overlaps. It does not measure exact chasis color, knob textures, all small legends or multi-layer line intersections.
+## Current browser and photo comparison (17 Nov 2026)
+- GitHub Actions ROM-free reference run [44108722814](https://github.com/tamabotmusic/ostirus-web-ci/actions/runs/44108722814) completed **successfully**.
+- The workflow runs geometry tests, panel tests and `node --check`, then opens the **actual JavaScript/CSS** in headless Chrome.
+- Browser DOM inventory verified: **32 rotary groups and 43 physical key-cap groups**.
+- Browser screenshot generated at 1533×740, with the 1533×685 face region compared locally against the owner's black TI2 photograph.
+- Local side-by-side and geometry overlays were inspected. They are intentionally **not uploaded to GitHub** because the reference photograph belongs to the user.
+- The browser render exposed a browser-serif fallback on the ARP tab, duplicate/cramped VALUE legends, an excessively low FM MODE label, and short bottom envelope/effects contours; all have been corrected and re-rendered.
+- This confirms **geometric alignment and successful browser rendering**, not photorealistic finish or accurate live hardware state.
 
 ## Release blockers
-- Precise per-control silkscreen and SHIFT secondary legends still need comparison with the black photo and manual.
-- Some body elements/contours and proportions are close but not pixel-verified against the original.
+- Several very small silkscreen and SHIFT secondary legends still require a final per-control typographic audit.
+- Vector knob material, engraving texture, color and LCD styling are not yet photo-realistic; the latest screenshot shows a recognisable TI2 layout but not a pixel-identical instrument.
 - Decorative LEDs are **not** synced with emulated DSP state; they must not imply live patch status.
 - Three VALUE encoders are intentionally unconnected until the LCD context can be read.
 - Further comparative render cycles are required before any UI-only installer is generated.
