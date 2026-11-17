@@ -1,0 +1,54 @@
+name: OsTIrus TI2 Desktop panel preview (sin ROM)
+on:
+  push:
+    branches:
+      - feature/ti2-desktop-panel
+    paths:
+      - 'hybrid/**'
+      - '.github/workflows/panel-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Verificar panel TI2 y crear ZIP sin recompilar
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Ejecutar pruebas HTTP/MIDI y panel físico
+        run: python -m unittest discover -s hybrid/tests -v
+      - name: Comprobar JavaScript y shell
+        run: |
+          node --check hybrid/ui/app.js
+          node --check hybrid/ui/ti2-panel.js
+          python -m compileall -q hybrid
+          bash -n hybrid/INSTALAR_PANEL_TI2.command
+      - name: Crear paquete de actualización solo de interfaz
+        run: |
+          mkdir -p dist/OsTIrus_Panel_TI2_Preview/files/ui
+          cp hybrid/server.py dist/OsTIrus_Panel_TI2_Preview/files/server.py
+          cp hybrid/ui/index.html hybrid/ui/app.js hybrid/ui/style.css dist/OsTIrus_Panel_TI2_Preview/files/ui/
+          cp hybrid/ui/ti2-panel.js hybrid/ui/ti2-panel.css dist/OsTIrus_Panel_TI2_Preview/files/ui/
+          cp hybrid/INSTALAR_PANEL_TI2.command dist/OsTIrus_Panel_TI2_Preview/
+          cp hybrid/LEEME_PANEL_TI2.md dist/OsTIrus_Panel_TI2_Preview/
+          chmod +x dist/OsTIrus_Panel_TI2_Preview/INSTALAR_PANEL_TI2.command
+          test ! -e dist/OsTIrus_Panel_TI2_Preview/files/bin
+          if find dist -type f \( -iname '*.bin' -o -iname '*.rom' -o -iname '*.wasm' -o -iname '*.syx' \) | grep -q .; then
+            echo 'PROHIBIDO: firmware o binario en paquete de interfaz' >&2
+            exit 1
+          fi
+          (cd dist && zip -qr OsTIrus_Panel_TI2_Preview.zip OsTIrus_Panel_TI2_Preview)
+          unzip -l dist/OsTIrus_Panel_TI2_Preview.zip
+      - name: Publicar actualización experimental sin ROM
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-ti2-panel-preview
+          path: dist/OsTIrus_Panel_TI2_Preview.zip
+          if-no-files-found: error
+          retention-days: 14
