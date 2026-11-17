@@ -35,6 +35,14 @@ Neither source photograph nor full manual nor ROM is included in this repository
 - The browser render exposed a browser-serif fallback on the ARP tab, duplicate/cramped VALUE legends, an excessively low FM MODE label, and short bottom envelope/effects contours; all have been corrected and re-rendered.
 - This confirms **geometric alignment and successful browser rendering**, not photorealistic finish or accurate live hardware state.
 
+## Owner's red-box correction cycle (17 Nov 2026)
+
+- Consulted the official **Virus TI2 Quickstart** from Access/Kemper, 2009, at https://www.virus.info/support/manuals (Virus TI2 → Virus TI Quickstart); cross-checked printed pp. 23–38 against the owner's black TI2 photograph. The owner's uploaded 2006 TI1 manual is secondary, not authoritative for TI2 differences.
+- Repaired the MATRIX/ARP duplicate border, DEMOSONG spacing, LFO1/LFO2 destination silkscreen, upper LFO waveform icons, OSC WAVE caption, FILTER BALANCE right inset, CUTOFF 2 -6/+6 markings, dual FILTER MODE LED columns, EFFECTS ribbons and continuous transpose notch, MASTER PART/PARAMETERS/BANK/VALUE/PROGRAM captions, and envelope secondary legends.
+- Browser validation run [44111495567](https://github.com/tamabotmusic/ostirus-web-ci/actions/runs/44111495567) passed geometry, JS syntax, real DOM render and visual collision checks.
+- **Measured browser result: 32 rotary groups, 43 separate key caps, 0 text-on-keycap intersections and 0 text-on-text intersections.** A photo comparison was regenerated locally and the original photograph was not uploaded to the repository.
+- This is a measured SVG collision result, **not a claim of a pixel-identical panel**. The photograph has physical surface texture, hardware-specific plastics and engraved lettering that are not fully reproduced by the vector render.
+
 ## Release blockers
 - Several very small silkscreen and SHIFT secondary legends still require a final per-control typographic audit.
 - Vector knob material, engraving texture, color and LCD styling are not yet photo-realistic; the latest screenshot shows a recognisable TI2 layout but not a pixel-identical instrument.
