@@ -59,13 +59,13 @@
   const rateKnob=svg.querySelector('.ti2-knob[data-label="RATE"]');
   const oscWaveKnob=svg.querySelector('.ti2-knob[data-label="WAVE"]');
   const parseCenter=node=>{
-    const m=node?.getAttribute('transform')?.match(/translate\\(([-\\d.]+) ([-\\d.]+)\\)/);
+    const m=node?.getAttribute('transform')?.match(/translate\(([-\d.]+) ([-\d.]+)\)/);
     return m?{x:Number(m[1]),y:Number(m[2])}:null;
   };
   const rateCenter=parseCenter(rateKnob),oscCenter=parseCenter(oscWaveKnob);
   const lfo3Cap=[...svg.querySelectorAll('.ti2-button-group')]
     .find(node=>node.getAttribute('transform')==='translate(545 288)');
-  const dividerX=divider?.getAttribute('d')?.match(/^M([\\d.]+) /);
+  const dividerX=divider?.getAttribute('d')?.match(/^M([\d.]+) /);
   const lfoOscClear=!!(rateCenter && oscCenter && lfo3Cap && dividerX &&
     rateCenter.x===545 && rateCenter.y===162 &&
     rateCenter.x===parseCenter(lfo3Cap).x &&
