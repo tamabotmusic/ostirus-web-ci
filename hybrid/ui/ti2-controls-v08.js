@@ -46,15 +46,16 @@
   knob.setAttribute('aria-valuemax', '128');
   knob.setAttribute('data-action', 'program-encoder');
 
-  function refresh() {
+  function refresh(updatePointer = true) {
     const current = programs.current();
     knob.setAttribute('aria-valuenow', String(current + 1));
     knob.setAttribute('aria-valuetext', 'Programa ' + (current + 1));
-    needle.setAttribute('transform', 'rotate(' + (-130 + current * 260 / 127) + ')');
+    // Preserve the approved v0.7 resting angle until the user selects a program.
+    if (updatePointer) needle.setAttribute('transform', 'rotate(' + (-130 + current * 260 / 127) + ')');
   }
   selector.addEventListener('input', refresh);
   selector.addEventListener('change', refresh);
-  refresh();
+  refresh(false);
 
   // Dragging commits on release, so a single gesture never floods the DSP
   // with dozens of expensive patch loads.
