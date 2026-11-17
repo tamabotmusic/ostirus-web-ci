@@ -139,6 +139,15 @@
   ];
   if(knobs.length!==32 || buttons.length!==43) throw new Error('TI2 geometry check failed: '+knobs.length+' knobs/'+buttons.length+' button caps');
 
+  // Local outgoing/received CC cache only. Never interpret this as a firmware read.
+  // v0.9 resolves shared physical encoders against the user's local selection.
+  const localCCValues=new Map();
+  const knobRefreshers=[];
+  window.OsTIrusTI2Knobs=Object.freeze({
+    refresh:()=>knobRefreshers.forEach(fn=>fn()),
+    clear:()=>{localCCValues.clear();knobRefreshers.forEach(fn=>fn());},
+    localValue:controller=>localCCValues.get(controller),
+  });
   // Knob rendering uses concentric hardware rings, 13 printed arc ticks and a rotating pointer.
   function drawKnob([label,x,y,r,cc]){
     const group=create('g',{class:'ti2-knob',transform:'translate('+x+' '+y+')',
@@ -184,22 +193,63 @@
 
     if(cc!==null){
       group.setAttribute('tabindex','0');group.setAttribute('role','slider');
-      group.setAttribute('aria-label',label+' (CC '+cc+')');group.setAttribute('aria-valuemin','0');
-      group.setAttribute('aria-valuemax','127');group.setAttribute('aria-valuenow',String(val));
-      group.classList.add('control-live');
-      let grab=null,pending=false;
+      group.setAttribute('aria-valuemin','0');group.setAttribute('aria-valuemax','127');
+      let grab=null,pending=false,latestBatch=null;
+      const controllers=()=>{
+        const result=window.OsTIrusTI2Context?.resolveCC?.({label,x,y,baseCC:cc});
+        const mapped=result===undefined?[cc]:result===null?[]:Array.isArray(result)?result:[result];
+        return [...new Set(mapped)].filter(v=>Number.isInteger(v)&&v>=0&&v<=127);
+      };
+      const refreshBinding=()=>{
+        const mapped=controllers();
+        const live=mapped.length>0;
+        group.classList.toggle('control-live',live);
+        group.classList.toggle('control-pending',!live);
+        group.setAttribute('aria-disabled',String(!live));
+        if(live){
+          group.setAttribute('data-cc',String(mapped[0]));
+          group.setAttribute('data-cc-list',mapped.join(','));
+        }else{
+          group.removeAttribute('data-cc');
+          group.removeAttribute('data-cc-list');
+        }
+        const remembered=mapped.map(c=>localCCValues.get(c)).find(v=>v!==undefined);
+        val=remembered===undefined?64:remembered;
+        paint();
+        group.setAttribute('aria-valuenow',String(val));
+        group.setAttribute('aria-valuetext',!live?'Sin asignación CC verificada para este contexto':
+          remembered===undefined?'Posición neutra ilustrativa; valor del firmware desconocido':
+          'Valor local enviado o recibido: '+val);
+        group.setAttribute('aria-label',label+(live?' (CC '+mapped.join(' y ')+')':' (sin CC verificado)'));
+      };
+      knobRefreshers.push(refreshBinding);
+      refreshBinding();
       const send=(v)=>{
+        const mapped=controllers();
+        if(!mapped.length){
+          const editStatus=document.getElementById('ti2-precision-edit');
+          if(editStatus)editStatus.textContent=label+' · sin CC verificado en este contexto';
+          return;
+        }
         const next=Math.min(127,Math.max(0,Math.round(v)));
         if(next===val)return;
         val=next;paint();group.setAttribute('aria-valuenow',String(val));
+        group.setAttribute('aria-valuetext','Valor local enviado: '+val);
+        mapped.forEach(controller=>localCCValues.set(controller,val));
         const editStatus=document.getElementById('ti2-precision-edit');
-        if(editStatus)editStatus.textContent=label+' · CC '+cc+' · '+val+' / 127';
+        if(editStatus)editStatus.textContent=label+' · CC '+mapped.join(' + ')+' · '+val+' / 127 · local';
+        // Capture the CC mapping at gesture time, not after a later SELECT click.
+        latestBatch={controllers:mapped,value:val};
         if(!pending){pending=true;requestAnimationFrame(()=>{
           pending=false;
-          fetch('/api/midi',{method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({type:'cc',controller:cc,value:val})}).then(response=>{
-              if(!response.ok)throw new Error('Host unavailable');
-            }).catch(()=>{if(editElement)editElement.textContent='MIDI ERROR · HOST NO DISPONIBLE';});
+          const batch=latestBatch;latestBatch=null;
+          if(!batch)return;
+          Promise.all(batch.controllers.map(controller=>
+            fetch('/api/midi',{method:'POST',headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({type:'cc',controller,value:batch.value})}).then(response=>{
+                if(!response.ok)throw new Error('Host unavailable');
+              })
+          )).catch(()=>{if(editElement)editElement.textContent='MIDI ERROR · HOST NO DISPONIBLE';});
         });}
       };
       group.addEventListener('pointerdown',e=>{if(e.button!==0)return;grab={id:e.pointerId,y:e.clientY,value:val};group.setPointerCapture(e.pointerId);e.preventDefault()});
@@ -252,14 +302,23 @@
   };
   ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'].forEach((s,i)=>indicator(226,231+i*18,s));
   [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x])=>indicator(x,125,s));
-  ['OSC 1','OSC 2','OSC 3'].forEach((s,i)=>indicator(618+i*49,236,s));
+  ['OSC 1','OSC 2','OSC 3'].forEach((s,i)=>{
+    indicator(618+i*49,236,s);
+    // Tag only the selection LED, not other occurrences of OSC 1/2/3.
+    const led=[...svg.querySelectorAll('circle[data-state="unavailable"]')].at(-1);
+    led.setAttribute('data-ti2-osc-select-led',String(i+1));
+  });
   ['AF','LP','HP','BP','BS'].forEach((s,i)=>{
     indicator(1326,240+i*15,s);
     // One physical mode LED column per filter, as in the TI2 photo.
     create('circle',{cx:1362,cy:240+i*15,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
       'data-state':'unavailable','data-ti2-filter-mode-right':s},svg);
   });
-  ['FILT 1','FILT 2'].forEach((s,i)=>indicator(1420+i*51,240,s));
+  ['FILT 1','FILT 2'].forEach((s,i)=>{
+    indicator(1420+i*51,240,s);
+    const led=[...svg.querySelectorAll('circle[data-state="unavailable"]')].at(-1);
+    led.setAttribute('data-ti2-filter-select-led',String(i+1));
+  });
   ['DELAY','REVERB','LOW EQ','MID EQ','HIGH EQ'].forEach((s,i)=>indicator(67+i*85,380,s));
   // Unlike a uniform UI grid, the five original TI2 indicators are unevenly spaced.
   // These centers were checked against the owner's straight-on TI2 photograph.
@@ -344,6 +403,16 @@
   };
   selector.addEventListener('change',setPatch);
   selector.addEventListener('input',setPatch);
+  // Program Change invalidates local CC cache; a new patch's values are unknown.
+  selector.addEventListener('input',()=>window.OsTIrusTI2Knobs.clear());
+  window.addEventListener('ti2-local-midi-cc',event=>{
+    const {controller,value}=event.detail||{};
+    if(Number.isInteger(controller)&&controller>=0&&controller<=127&&
+      Number.isInteger(value)&&value>=0&&value<=127){
+      localCCValues.set(controller,value);
+      window.OsTIrusTI2Knobs.refresh();
+    }
+  });
   setPatch();
   // Important: knob controls are still output-only. They do not imply reading firmware parameter state.
   const editElement=document.getElementById('ti2-precision-edit');
