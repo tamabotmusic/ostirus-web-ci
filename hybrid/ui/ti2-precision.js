@@ -112,21 +112,23 @@
     ['ATTACK',1177,417,28,54],['DECAY',1275,417,28,55],['SUSTAIN',1377,417,28,56],['RELEASE',1478,417,28,58],
     ['ATTACK',1177,563,28,59],['DECAY',1275,563,28,60],['SUSTAIN',1377,563,28,61],['RELEASE',1478,563,28,63]
   ];
+  // Photo-registered physical key caps. The filter SELECT pair has two separate caps.
   const buttons = [
-    ['ARP EDIT',82,286],['ARP ON',124,286],
-    ['DEST 1',190,175],['DEST 2',234,175],['MOD SELECT',193,285],
-    ['EDIT',309,177],['ENV MODE',350,177],['SHAPE',418,177],
-    ['LFO 1 SELECT',309,285],['LFO 2 SELECT',421,285],['LFO 3 SELECT',543,285],
-    ['OSC SELECT',621,287],['OSC EDIT',663,287],['OSC 3 ON',704,287],['MONO',821,287],['SYNC',865,287],
-    ['FILTER EDIT',1242,285],['FILTER 1',1284,285],['FILTER 2',1392,285],['FILTER SELECT',1480,285],
-    ['EFFECT SELECT',78,440],['EFFECT EDIT',119,440],['EFFECT SELECT',78,566],['EFFECT EDIT',119,566],
-    ['EXIT',497,375],['TAP',539,375],['EDIT',497,451],['CONFIG',539,451],
-    ['STORE',497,518],['UNDO',539,518],['SHIFT',497,582],['SEARCH',539,582],
-    ['PART −',931,376],['PART +',973,376],['MULTI',931,451],['SINGLE',973,451],
-    ['PARAM −',931,517],['PARAM +',973,517],['VALUE −',931,582],['VALUE +',973,582],
-    ['TRANS −',382,565],['TRANS +',424,565],
+    ['ARP EDIT',83,288],['ARP ON',127,288],
+    ['DEST 1',194,175],['DEST 2',237,175],['MOD SELECT',194,289],
+    ['EDIT',314,175],['ENV MODE',359,175],['SHAPE',427,175],
+    ['LFO 1 SELECT',314,288],['LFO 2 SELECT',425,288],['LFO 3 SELECT',545,288],
+    ['OSC SELECT',625,288],['OSC EDIT',667,288],['OSC 3 ON',710,288],['MONO',824,288],['SYNC',866,288],
+    ['FILTER EDIT',1244,288],['FILTER 1',1286,288],['FILTER 2',1390,288],
+    ['FILTER SELECT LEFT',1432,288],['FILTER SELECT RIGHT',1477,288],
+    ['EFFECT SELECT',83,445],['EFFECT EDIT',127,445],['EFFECT SELECT',83,568],['EFFECT EDIT',127,568],
+    ['EXIT',501,381],['TAP',545,381],['EDIT',501,456],['CONFIG',545,456],
+    ['STORE',501,522],['UNDO',545,522],['SHIFT',501,588],['SEARCH',545,588],
+    ['PART −',935,381],['PART +',977,381],['MULTI',935,456],['SINGLE',977,456],
+    ['PARAM −',935,522],['PARAM +',977,522],['VALUE −',935,588],['VALUE +',977,588],
+    ['TRANS −',386,588],['TRANS +',428,588],
   ];
-  if(knobs.length!==32 || buttons.length!==42) throw new Error('TI2 geometry check failed: '+knobs.length+' knobs/'+buttons.length+' buttons');
+  if(knobs.length!==32 || buttons.length!==43) throw new Error('TI2 geometry check failed: '+knobs.length+' knobs/'+buttons.length+' button caps');
 
   // Knob rendering uses concentric hardware rings, 13 printed arc ticks and a rotating pointer.
   function drawKnob([label,x,y,r,cc]){
@@ -193,9 +195,10 @@
   // Basic tactile shape; unimplemented buttons deliberately not interactive.
   function drawButton([name,x,y]) {
     const group=create('g',{class:'ti2-button-group',transform:'translate('+x+' '+y+')'},svg);
-    create('rect',{x:-18,y:-18,width:36,height:35,rx:3,fill:'#11181c',stroke:'#97a4a8','stroke-width':.8},group);
-    create('rect',{x:-16,y:-16,width:32,height:30,rx:2,fill:'url(#button)',stroke:'#141c20','stroke-width':1},group);
-    create('rect',{x:-15,y:-16,width:30,height:3,rx:1,fill:'#afbfc0',opacity:'.15'},group);
+    // ~42 px physical keycaps in the photo; the former 36×35 shapes were undersized.
+    create('rect',{x:-20.5,y:-21,width:41,height:42,rx:3,fill:'#11181c',stroke:'#97a4a8','stroke-width':.8},group);
+    create('rect',{x:-19,y:-19,width:38,height:38,rx:2,fill:'url(#button)',stroke:'#141c20','stroke-width':1},group);
+    create('rect',{x:-18,y:-19,width:36,height:3,rx:1,fill:'#afbfc0',opacity:'.15'},group);
     const caption = name==='FILTER 1' ? 'FILT 1' :
       name==='FILTER 2' ? 'FILT 2' :
       name.startsWith('FILTER ') ? name.slice(7) :
@@ -206,11 +209,13 @@
       name.startsWith('OSC ') && name.includes('SELECT') ? 'SELECT' :
       name.startsWith('OSC ') && name.includes('EDIT') ? 'EDIT' : name;
     if (!name.startsWith('TRANS ') && !name.startsWith('VALUE ') &&
-        !name.startsWith('PARAM ') && !name.startsWith('PART '))
+        !name.startsWith('PARAM ') && !name.startsWith('PART ') &&
+        !name.startsWith('FILTER SELECT '))
       txt(svg,x,y+30,caption,'button-caption',{'text-anchor':'middle'});
   }
   knobs.forEach(drawKnob);
   buttons.forEach(drawButton);
+  txt(svg,1454,318,'SELECT','button-caption',{'text-anchor':'middle'});
 
   // Matrix / LFO / filter and effects status indicators, all physical-position references.
   // All LEDs are neutral: firmware state is not exposed to the web UI.
@@ -291,5 +296,5 @@
   setPatch();
   // Important: knob controls are still output-only. They do not imply reading firmware parameter state.
   const editElement=document.getElementById('ti2-precision-edit');
-  if(editElement)editElement.textContent='PANEL v0.7 REFERENCE · 32 KNOBS · 42 BUTTONS · LED STATES NOT SYNCHRONIZED';
+  if(editElement)editElement.textContent='PANEL v0.7 REFERENCE · 32 KNOBS · 43 VISIBLE KEY CAPS · LED STATES NOT SYNCHRONIZED';
 })();
