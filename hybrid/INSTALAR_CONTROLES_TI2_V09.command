@@ -10,6 +10,7 @@ REQUIRED=(
   "ui/style.css"
   "ui/ti2-precision.js"
   "ui/ti2-precision.css"
+  "ui/ti2-controls-v08.js"
   "ui/ti2-controls-v09.js"
 )
 for file in "${REQUIRED[@]}"; do
