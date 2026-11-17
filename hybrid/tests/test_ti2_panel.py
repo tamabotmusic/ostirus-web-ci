@@ -44,6 +44,7 @@ class TI2VectorPanelTests(unittest.TestCase):
         self.assertIn("txt(svg,212,132,'DEMOSONG'", JS)
         self.assertIn("txt(svg,212,144,'PRESS + HOLD'", JS)
         self.assertIn("['WAVE','CUTOFF 1','CUTOFF 2','SHAPE','FM AMT','PAN','ASSIGN']", JS)
+        self.assertIn("['OSC 1','OSC 2/3','PW','RESO','FILT GAIN','ASSIGN']", JS)
         self.assertIn("'data-ti2-waveform':String(i+1)", JS)
         self.assertIn("label==='CUTOFF 2'?'-6'", JS)
         self.assertIn("label==='CUTOFF 2'?'+6'", JS)
