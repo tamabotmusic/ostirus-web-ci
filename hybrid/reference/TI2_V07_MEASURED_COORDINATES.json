@@ -1,0 +1,455 @@
+{
+  "schema": "ostirus-panel-geometry-v07",
+  "reference": "User-provided original black TI2 Desktop photo",
+  "reference_frame": {
+    "width": 1533,
+    "height": 685,
+    "unit": "px"
+  },
+  "status": "measured approximation; visual approval pending",
+  "knobs": [
+    {
+      "label": "VOLUME",
+      "x": 79,
+      "y": 155,
+      "r": 31,
+      "cc": null
+    },
+    {
+      "label": "RATE",
+      "x": 531,
+      "y": 162,
+      "r": 27,
+      "cc": 67
+    },
+    {
+      "label": "WAVE",
+      "x": 638,
+      "y": 161,
+      "r": 28,
+      "cc": 17
+    },
+    {
+      "label": "WAVE SELECT/PW",
+      "x": 742,
+      "y": 161,
+      "r": 28,
+      "cc": 19
+    },
+    {
+      "label": "SEMITONE",
+      "x": 843,
+      "y": 161,
+      "r": 28,
+      "cc": 20
+    },
+    {
+      "label": "DETUNE 2/3",
+      "x": 947,
+      "y": 161,
+      "r": 28,
+      "cc": 26
+    },
+    {
+      "label": "FM AMOUNT",
+      "x": 947,
+      "y": 280,
+      "r": 27,
+      "cc": 27
+    },
+    {
+      "label": "OSC BALANCE",
+      "x": 1057,
+      "y": 161,
+      "r": 29,
+      "cc": 33
+    },
+    {
+      "label": "SUB OSC VOLUME",
+      "x": 1057,
+      "y": 276,
+      "r": 29,
+      "cc": 34
+    },
+    {
+      "label": "OSC VOLUME",
+      "x": 1057,
+      "y": 443,
+      "r": 29,
+      "cc": 36
+    },
+    {
+      "label": "NOISE VOLUME",
+      "x": 1057,
+      "y": 557,
+      "r": 29,
+      "cc": 37
+    },
+    {
+      "label": "CUTOFF",
+      "x": 1179,
+      "y": 160,
+      "r": 28,
+      "cc": 40
+    },
+    {
+      "label": "RESONANCE",
+      "x": 1281,
+      "y": 160,
+      "r": 28,
+      "cc": 42
+    },
+    {
+      "label": "ENV AMOUNT",
+      "x": 1378,
+      "y": 160,
+      "r": 28,
+      "cc": 44
+    },
+    {
+      "label": "FILTER BALANCE",
+      "x": 1480,
+      "y": 160,
+      "r": 27,
+      "cc": 48
+    },
+    {
+      "label": "CUTOFF 2",
+      "x": 1179,
+      "y": 280,
+      "r": 27,
+      "cc": 41
+    },
+    {
+      "label": "SEND",
+      "x": 185,
+      "y": 436,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "TIME/COLOR",
+      "x": 292,
+      "y": 436,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "FEEDBACK",
+      "x": 392,
+      "y": 436,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "TYPE/MIX",
+      "x": 185,
+      "y": 564,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "INTENSITY",
+      "x": 292,
+      "y": 564,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "VALUE 1",
+      "x": 634,
+      "y": 563,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "VALUE 2",
+      "x": 734,
+      "y": 563,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "VALUE 3",
+      "x": 831,
+      "y": 563,
+      "r": 28,
+      "cc": null
+    },
+    {
+      "label": "FILTER ENV ATTACK",
+      "x": 1177,
+      "y": 417,
+      "r": 28,
+      "cc": 54
+    },
+    {
+      "label": "FILTER ENV DECAY",
+      "x": 1275,
+      "y": 417,
+      "r": 28,
+      "cc": 55
+    },
+    {
+      "label": "FILTER ENV SUSTAIN",
+      "x": 1377,
+      "y": 417,
+      "r": 28,
+      "cc": 56
+    },
+    {
+      "label": "FILTER ENV RELEASE",
+      "x": 1478,
+      "y": 417,
+      "r": 28,
+      "cc": 58
+    },
+    {
+      "label": "AMP ENV ATTACK",
+      "x": 1177,
+      "y": 563,
+      "r": 28,
+      "cc": 59
+    },
+    {
+      "label": "AMP ENV DECAY",
+      "x": 1275,
+      "y": 563,
+      "r": 28,
+      "cc": 60
+    },
+    {
+      "label": "AMP ENV SUSTAIN",
+      "x": 1377,
+      "y": 563,
+      "r": 28,
+      "cc": 61
+    },
+    {
+      "label": "AMP ENV RELEASE",
+      "x": 1478,
+      "y": 563,
+      "r": 28,
+      "cc": 63
+    }
+  ],
+  "buttons": [
+    {
+      "label": "ARP EDIT",
+      "x": 82,
+      "y": 286
+    },
+    {
+      "label": "ARP ON",
+      "x": 124,
+      "y": 286
+    },
+    {
+      "label": "DEST 1",
+      "x": 190,
+      "y": 175
+    },
+    {
+      "label": "DEST 2",
+      "x": 234,
+      "y": 175
+    },
+    {
+      "label": "MOD SELECT",
+      "x": 193,
+      "y": 285
+    },
+    {
+      "label": "MOD EDIT",
+      "x": 309,
+      "y": 177
+    },
+    {
+      "label": "ENV MODE",
+      "x": 350,
+      "y": 177
+    },
+    {
+      "label": "SHAPE",
+      "x": 418,
+      "y": 177
+    },
+    {
+      "label": "LFO 1 SELECT",
+      "x": 309,
+      "y": 285
+    },
+    {
+      "label": "LFO 2 SELECT",
+      "x": 421,
+      "y": 285
+    },
+    {
+      "label": "LFO 3 SELECT",
+      "x": 543,
+      "y": 285
+    },
+    {
+      "label": "OSC SELECT",
+      "x": 621,
+      "y": 287
+    },
+    {
+      "label": "OSC EDIT",
+      "x": 663,
+      "y": 287
+    },
+    {
+      "label": "OSC 3 ON",
+      "x": 704,
+      "y": 287
+    },
+    {
+      "label": "MONO",
+      "x": 821,
+      "y": 287
+    },
+    {
+      "label": "SYNC",
+      "x": 865,
+      "y": 287
+    },
+    {
+      "label": "FILTER EDIT",
+      "x": 1242,
+      "y": 285
+    },
+    {
+      "label": "FILTER 1",
+      "x": 1284,
+      "y": 285
+    },
+    {
+      "label": "FILTER 2",
+      "x": 1392,
+      "y": 285
+    },
+    {
+      "label": "FILTER SELECT",
+      "x": 1480,
+      "y": 285
+    },
+    {
+      "label": "FX TOP SELECT",
+      "x": 78,
+      "y": 440
+    },
+    {
+      "label": "FX TOP EDIT",
+      "x": 119,
+      "y": 440
+    },
+    {
+      "label": "FX BOTTOM SELECT",
+      "x": 78,
+      "y": 566
+    },
+    {
+      "label": "FX BOTTOM EDIT",
+      "x": 119,
+      "y": 566
+    },
+    {
+      "label": "EXIT",
+      "x": 497,
+      "y": 375
+    },
+    {
+      "label": "TAP",
+      "x": 539,
+      "y": 375
+    },
+    {
+      "label": "MASTER EDIT",
+      "x": 497,
+      "y": 451
+    },
+    {
+      "label": "CONFIG",
+      "x": 539,
+      "y": 451
+    },
+    {
+      "label": "STORE",
+      "x": 497,
+      "y": 518
+    },
+    {
+      "label": "UNDO",
+      "x": 539,
+      "y": 518
+    },
+    {
+      "label": "SHIFT",
+      "x": 497,
+      "y": 582
+    },
+    {
+      "label": "SEARCH",
+      "x": 539,
+      "y": 582
+    },
+    {
+      "label": "PART -",
+      "x": 931,
+      "y": 376
+    },
+    {
+      "label": "PART +",
+      "x": 973,
+      "y": 376
+    },
+    {
+      "label": "MULTI",
+      "x": 931,
+      "y": 451
+    },
+    {
+      "label": "SINGLE",
+      "x": 973,
+      "y": 451
+    },
+    {
+      "label": "PARAM -",
+      "x": 931,
+      "y": 517
+    },
+    {
+      "label": "PARAM +",
+      "x": 973,
+      "y": 517
+    },
+    {
+      "label": "VALUE -",
+      "x": 931,
+      "y": 582
+    },
+    {
+      "label": "VALUE +",
+      "x": 973,
+      "y": 582
+    },
+    {
+      "label": "TRANS -",
+      "x": 382,
+      "y": 565
+    },
+    {
+      "label": "TRANS +",
+      "x": 424,
+      "y": 565
+    }
+  ],
+  "notes": [
+    "Coordinates were independently measured against the black TI2 panel photograph, not the earlier silver TI photo.",
+    "Images and firmware remain strictly local and are not included in GitHub.",
+    "This reference is an implementation aid, not certified pixel-exact.",
+    "32 knobs/42 tactile keys checked against physical layout and official Virus TI User Manual, especially First Steps pages 21–45.",
+    "Patch positions/LED indicators cannot claim synchronization without reading real state."
+  ]
+}
