@@ -159,9 +159,12 @@
       txt(svg,captionX,captionY,label,captionClass,{'text-anchor':'middle'});
     }
     if(label!=='VOLUME') {
-      const bipolar=['SEMITONE','FILTER BALANCE','CUTOFF 2'].includes(label);
-      txt(svg,x-r+1,y+r+5,bipolar?'-48':'0','panel-scale');
-      txt(svg,x+r-1,y+r+5,bipolar?'+48':'12','panel-scale',{'text-anchor':'end'});
+      // The black TI2 silkscreen shows CUTOFF 2 as -6/+6; FILTER BALANCE as 0/12.
+      const left=label==='SEMITONE'?'-48':label==='CUTOFF 2'?'-6':'0';
+      const right=label==='SEMITONE'?'+48':label==='CUTOFF 2'?'+6':'12';
+      const scaleY=(label==='CUTOFF 2'||(y===563&&x>=1100))?y+r+1:y+r+5;
+      txt(svg,x-r+1,scaleY,left,'panel-scale');
+      txt(svg,x+r-1,scaleY,right,'panel-scale',{'text-anchor':'end'});
     }
 
     if(cc!==null){
@@ -236,7 +239,19 @@
   ['FILT 1','FILT 2'].forEach((s,i)=>indicator(1420+i*51,240,s));
   ['DELAY','REVERB','LOW EQ','MID EQ','HIGH EQ'].forEach((s,i)=>indicator(67+i*85,380,s));
   ['DISTORTION','CHARACTER','CHORUS','PHASER','OTHERS'].forEach((s,i)=>indicator(67+i*85,500,s));
-  ['WAVE','PW','RESO','FILT GAIN','ASSIGN'].forEach((s,i)=>indicator(458,141+i*17,s));
+  // Actual TI2 photo: top LFO group has waveform symbols, not RESONANCE text.
+  const lfoWaves=[
+    'M471 125 Q477 116 483 125 T495 125',
+    'M471 144 L477 137 L483 151 L489 137 L495 144',
+    'M471 162 L493 151 L493 162',
+    'M471 179 L471 171 L482 171 L482 179 L495 179'
+  ];
+  lfoWaves.forEach((d,i)=>{
+    create('circle',{cx:458,cy:126+i*17,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,'data-state':'unavailable'},svg);
+    create('path',{d,fill:'none',stroke:'#d5dfe0','stroke-width':1.5,'stroke-linecap':'round','stroke-linejoin':'round','data-ti2-waveform':String(i+1)},svg);
+  });
+  ['WAVE','CUTOFF 1','CUTOFF 2','SHAPE','FM AMT','PAN','ASSIGN']
+    .forEach((label,i)=>indicator(458,233+i*17,label));
   ['OSC 1','OSC 2/3','CUTOFF','SHAPE','FM AMT','PAN'].forEach((s,i)=>indicator(347,233+i*18,s));
   txt(svg,212,132,'DEMOSONG','panel-micro',{'text-anchor':'middle'});
   txt(svg,212,144,'PRESS + HOLD','panel-micro',{'text-anchor':'middle'});
@@ -290,8 +305,8 @@
   // LCD is a physical screen. Readout mirrors the already working Program Change selector.
   create('rect',{x:581,y:364,width:317,height:159,rx:9,fill:'#12191d',stroke:'#707b7e','stroke-width':3},svg);
   create('rect',{x:608,y:407,width:261,height:66,rx:2,fill:'url(#display)',stroke:'#182529','stroke-width':2},svg);
-  txt(svg,615,423,'SINGLE', 'lcd-line');
-  const lcdPatch=txt(svg,615,442,'PROGRAM 001','lcd-title');
+  txt(svg,615,418,'SINGLE', 'lcd-line');
+  const lcdPatch=txt(svg,615,443,'PROGRAM 001','lcd-title');
   txt(svg,615,460,'TI2 · OsTIrus','lcd-line');
   txt(svg,734,500,'OsTIrus / TI²','lcd-logo',{'text-anchor':'middle'});
   const lcdState=txt(svg,615,467,'','lcd-tiny');
