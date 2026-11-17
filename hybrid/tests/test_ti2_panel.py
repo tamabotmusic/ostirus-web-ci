@@ -29,7 +29,7 @@ class TI2PhysicalPanelTests(unittest.TestCase):
 
     def test_live_filter_and_envelopes_are_preserved(self):
         for cc in (40,41,42,43,44,48,54,55,56,58,59,60,61,63):
-            self.assertRegex(JS, r',"'+str(cc)+r'",')
+            self.assertRegex(JS, r','+str(cc)+r',')
 
     def test_only_knobs_send_midi(self):
         self.assertIn("type:'cc',controller:cc,value",JS)
