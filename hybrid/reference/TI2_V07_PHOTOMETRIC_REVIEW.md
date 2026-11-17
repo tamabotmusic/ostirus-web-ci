@@ -10,17 +10,26 @@
 Neither source photograph nor full manual nor ROM is included in this repository.
 
 ## Work completed in the current visual review
-- Independently measured all **32 rotary centers** and **42 tactile button centers**, saved to `TI2_V07_MEASURED_COORDINATES.json`.
+- Independently measured all **32 rotary centers** and **43 visible key cap centers**, saved to `TI2_V07_MEASURED_COORDINATES.json`.
 - Recreated the actual asymmetric Master/ARP boundary; narrow, highlighted vertical Mixer strip; two tier Effects; shared OSC selection; and Filter 4+1 knobs with five-mode LEDs.
 - Moved the LCD, value trio, navigation keys and envelopes toward measured centers.
 - Changed physical Master Volume to **unmapped** until its true native control path is verified; CC91 is not sufficient evidence for the master knob.
 - Preserved existing browser → local host control logic, including Program Change.
-- Generated local browser renders (Chromium) and compared against the black TI2 photo. **No reference photo was committed**.
+- Earlier local browser renders (Chromium) were compared against the black TI2 photo. **No reference photo was committed**.
+
+## Photo registration follow-up (17 Nov 2026)
+
+- Inspected the user-provided black TI2 photo in its registered 1533×685 frame with the existing center overlay.
+- Applied the common affine registration to the vector face. The first overlay showed the TRANSPOSE pair was about 23 pixels too high; corrected source y from 565 to 588.
+- Adjusted the physical keys in MATRIX, MODULATORS, OSCILLATORS, FILTERS, EFFECTS and LCD navigation to the photographed cap centers.
+- Recreated **two** separate FILTER SELECT caps. There are **43 visible rectangular caps** in the photo, while the manufacturer's 42-button overview may count the paired select control differently. Do not drop the visible fifth FILTERS cap to satisfy a numeric assertion.
+- Increased cap dimensions from 36×35 to 41×42 source units to match the photo more closely.
+- The coordinate overlay is a **geometry review**, not a pixel-perfect browser render or final approval.
 
 ## Latest local automated visual check
 - Browser JavaScript exceptions: **0**.
 - SVG rotary groups: **32**.
-- SVG tactile button groups: **42**.
+- SVG tactile button groups: **43** after geometry correction; browser re-render still pending.
 - Distinct SVG text/text intersections above 38% of smaller text area: **0** after fixes.
 - **Not yet an approval:** this only checks the control counts and gross typographic overlaps. It does not measure exact chasis color, knob textures, all small legends or multi-layer line intersections.
 
