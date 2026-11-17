@@ -143,9 +143,10 @@
   // v0.9 resolves shared physical encoders against the user's local selection.
   const localCCValues=new Map();
   const knobRefreshers=[];
+  const pendingClearers=[];
   window.OsTIrusTI2Knobs=Object.freeze({
     refresh:()=>knobRefreshers.forEach(fn=>fn()),
-    clear:()=>{localCCValues.clear();knobRefreshers.forEach(fn=>fn());},
+    clear:()=>{pendingClearers.forEach(fn=>fn());localCCValues.clear();knobRefreshers.forEach(fn=>fn());},
     localValue:controller=>localCCValues.get(controller),
   });
   // Knob rendering uses concentric hardware rings, 13 printed arc ticks and a rotating pointer.
@@ -194,7 +195,8 @@
     if(cc!==null){
       group.setAttribute('tabindex','0');group.setAttribute('role','slider');
       group.setAttribute('aria-valuemin','0');group.setAttribute('aria-valuemax','127');
-      let grab=null,pending=false,latestBatch=null;
+      let grab=null,pending=false,batches=[];
+      pendingClearers.push(()=>{batches=[];});
       const controllers=()=>{
         const result=window.OsTIrusTI2Context?.resolveCC?.({label,x,y,baseCC:cc});
         const mapped=result===undefined?[cc]:result===null?[]:Array.isArray(result)?result:[result];
@@ -239,17 +241,23 @@
         const editStatus=document.getElementById('ti2-precision-edit');
         if(editStatus)editStatus.textContent=label+' · CC '+mapped.join(' + ')+' · '+val+' / 127 · local';
         // Capture the CC mapping at gesture time, not after a later SELECT click.
-        latestBatch={controllers:mapped,value:val};
+        const previous=batches.at(-1);
+        if(previous && previous.controllers.join(',')===mapped.join(','))previous.value=val;
+        else batches.push({controllers:mapped,value:val});
         if(!pending){pending=true;requestAnimationFrame(()=>{
           pending=false;
-          const batch=latestBatch;latestBatch=null;
-          if(!batch)return;
-          Promise.all(batch.controllers.map(controller=>
-            fetch('/api/midi',{method:'POST',headers:{'Content-Type':'application/json'},
+          const toSend=batches;batches=[];
+          if(!toSend.length)return;
+          // Preserve distinct contexts across fast selector changes; only
+          // coalesce successive moves of the same physical CC mapping.
+          const sends=[];
+          toSend.forEach(batch=>batch.controllers.forEach(controller=>{
+            sends.push(fetch('/api/midi',{method:'POST',headers:{'Content-Type':'application/json'},
               body:JSON.stringify({type:'cc',controller,value:batch.value})}).then(response=>{
                 if(!response.ok)throw new Error('Host unavailable');
-              })
-          )).catch(()=>{if(editElement)editElement.textContent='MIDI ERROR · HOST NO DISPONIBLE';});
+              }));
+          }));
+          Promise.all(sends).catch(()=>{if(editElement)editElement.textContent='MIDI ERROR · HOST NO DISPONIBLE';});
         });}
       };
       group.addEventListener('pointerdown',e=>{if(e.button!==0)return;grab={id:e.pointerId,y:e.clientY,value:val};group.setPointerCapture(e.pointerId);e.preventDefault()});
