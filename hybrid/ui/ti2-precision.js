@@ -20,18 +20,22 @@
     node.textContent = value;
     return node;
   };
-  const svg = create('svg', {
+  const rootSvg = create('svg', {
     viewBox: '0 0 1533 685', role: 'group',
     'aria-label': 'OsTIrus TI2 Desktop: frontal físico fiel, con controles MIDI locales',
     xmlns: ns
   }, panel);
-  svg.classList.add('ti2-photo-svg');
-  const defs = create('defs', {}, svg);
+  rootSvg.classList.add('ti2-photo-svg');
+  const defs = create('defs', {}, rootSvg);
+  // Registered against the owner's black TI2 photo (1533 × 685 px).
+  // Apply a single face transform so controls, silkscreen and LEDs cannot drift apart.
+  const svg = create('g', {transform:'translate(-30 -20) scale(1.018 1.017)',
+    'data-registration':'TI2-black-photo-2026-11-17'}, rootSvg);
   const gradient = (id, stops, radial = false) => {
     const g = create(radial ? 'radialGradient' : 'linearGradient', {id, x1:'0%',y1:'0%',x2:'85%',y2:'100%'}, defs);
     stops.forEach(([position,color]) => create('stop', {offset:position,'stop-color':color},g));
   };
-  gradient('chassis', [['0%','#464c4f'],['35%','#292f33'],['74%','#343b3f'],['100%','#22282c']]);
+  gradient('chassis', [['0%','#303638'],['35%','#252b2e'],['74%','#292f32'],['100%','#1c2225']]);
   gradient('panelInset', [['0%','#3d484c'],['100%','#2a3033']]);
   gradient('knob', [['0%','#7c8788'],['28%','#495257'],['55%','#30373c'],['90%','#11171b'],['100%','#667073']]);
   gradient('button', [['0%','#657176'],['22%','#404a50'],['72%','#242b2f'],['100%','#12181c']]);
@@ -39,15 +43,12 @@
   const filter = create('filter',{id:'steelNoise',x:'0',y:'0',width:'100%',height:'100%'},defs);
   create('feTurbulence',{type:'fractalNoise',baseFrequency:'0.75 0.11',numOctaves:'2',seed:'4',result:'noise'},filter);
   create('feColorMatrix',{type:'saturate',values:'0'},filter);
-  create('rect',{x:21,y:16,width:1500,height:662,rx:5,fill:'#1d2427',stroke:'#677477','stroke-width':2},svg);
-  create('rect',{x:25,y:22,width:1492,height:653,rx:4,fill:'url(#chassis)',stroke:'#6b777a','stroke-width':.8},svg);
-  create('rect',{x:26,y:23,width:1490,height:650,rx:3,fill:'#aeb8b9',opacity:'.035',filter:'url(#steelNoise)'},svg);
-  // Top edge screws, shallow embossed panel side and engraved connectors.
-  for(const [x,y] of [[31,70],[1508,70],[31,615],[1508,615]]){
-    create('circle',{cx:x,cy:y,r:5,fill:'#111719',stroke:'#727e80','stroke-width':1.3},svg);
-    create('line',{x1:x-2,y1:y+2,x2:x+2,y2:y-2,stroke:'#5c6469','stroke-width':1.2},svg);
-  }
-  txt(svg, 52,69, '✧ OsTIrus', 'panel-logo');
+  // The TI2 Desktop face fills the photographed chassis; no invented corner screws.
+  create('rect',{x:29,y:19,width:1506,height:674,rx:2,fill:'#1d2427',stroke:'#5e6c70','stroke-width':1},svg);
+  create('rect',{x:30,y:20,width:1504,height:672,rx:2,fill:'url(#chassis)'},svg);
+  create('rect',{x:31,y:21,width:1502,height:670,rx:2,fill:'#aeb8b9',opacity:'.025',filter:'url(#steelNoise)'},svg);
+  // Shallow silkscreen and engraved connector labels.
+  txt(svg, 52,65, '✧ OsTIrus', 'panel-logo');
   txt(svg, 204,70, 'TI²', 'panel-model');
   const connectorNames = [
     [451,'USB'],[541,'MIDI IN'],[612,'MIDI OUT'],[681,'MIDI THRU'],[790,'S/PDIF'],
@@ -78,8 +79,8 @@
   create('rect',{x:172,y:487,width:245,height:15,rx:1,fill:'#111719',opacity:'.65'},svg);
   // A subtle Mixer emblem guide replaces artificial section cards.
   const sectionTabs = [
-    [167,99,'MATRIX'],[289,99,'MODULATORS'],[603,99,'OSCILLATORS'],
-    [1016,99,'MIXER'],[1118,99,'FILTERS'],[43,352,'EFFECTS'],
+    [167,97,'MATRIX'],[289,97,'MODULATORS'],[603,97,'OSCILLATORS'],
+    [1016,97,'MIXER'],[1118,97,'FILTERS'],[43,355,'EFFECTS'],
     [1120,355,'FILTER ENVELOPE'],[1120,493,'AMPLIFIER ENVELOPE']
   ];
   for (const [x,y,label] of sectionTabs) {
@@ -105,7 +106,7 @@
     ['OSC VOLUME',1057,443,29,36],['NOISE VOLUME',1057,557,29,37],
     ['CUTOFF',1179,160,28,40],['RESONANCE',1281,160,28,42],
     ['ENV AMOUNT',1378,160,28,44],['FILTER BALANCE',1480,160,27,48],['CUTOFF 2',1179,280,27,41],
-    ['SEND',185,436,28,null],['TIME/COLOR',292,436,28,null],['FEEDBACK',392,436,28,null],
+    ['SEND',185,436,28,null],['TIME/COLOR',292,436,28,null],['FEEDBACK/DAMPING',392,436,28,null],
     ['TYPE/MIX',185,564,28,null],['INTENSITY',292,564,28,null],
     ['VALUE 1',634,563,28,null],['VALUE 2',734,563,28,null],['VALUE 3',831,563,28,null],
     ['ATTACK',1177,417,28,54],['DECAY',1275,417,28,55],['SUSTAIN',1377,417,28,56],['RELEASE',1478,417,28,58],
@@ -212,20 +213,21 @@
   buttons.forEach(drawButton);
 
   // Matrix / LFO / filter and effects status indicators, all physical-position references.
+  // All LEDs are neutral: firmware state is not exposed to the web UI.
   const indicator=(x,y,caption,on=false,anchor='start')=>{
-    create('circle',{cx:x,cy:y,r:3.4,fill:on?'#ff5261':'#1d272a',stroke:on?'#ffb0a9':'#809092','stroke-width':.8},svg);
-    if(on)create('circle',{cx:x,cy:y,r:6.5,fill:'#ff3745',opacity:'.12'},svg);
+    create('circle',{cx:x,cy:y,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
+      'data-state':'unavailable'},svg);
     txt(svg,x+(anchor==='start'?7:-7),y+2.7,caption,'indicator-caption',{'text-anchor':anchor});
   };
-  ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'].forEach((s,i)=>indicator(226,231+i*18,s,i===0));
-  [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x],i)=>indicator(x,125,s,i===0));
-  ['OSC 1','OSC 2','OSC 3'].forEach((s,i)=>indicator(618+i*49,236,s,i===0));
-  ['AF','LP','HP','BP','BS'].forEach((s,i)=>indicator(1326,240+i*15,s,i===1));
-  ['FILT 1','FILT 2'].forEach((s,i)=>indicator(1420+i*51,240,s,i===0));
-  ['DELAY','REVERB','LOW EQ','MID EQ','HIGH EQ'].forEach((s,i)=>indicator(67+i*85,380,s,i===1));
-  ['DISTORTION','CHARACTER','CHORUS','PHASER','OTHERS'].forEach((s,i)=>indicator(67+i*85,500,s,i===0));
-  ['WAVE','PW','RESONANCE','FLT GAIN','ASSIGN'].forEach((s,i)=>indicator(458,141+i*17,s,i===0));
-  ['OSC 1','OSC 2/3','CUTOFF','SHAPE','FM AMT','PAN'].forEach((s,i)=>indicator(347,233+i*18,s,i===1));
+  ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'].forEach((s,i)=>indicator(226,231+i*18,s));
+  [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x])=>indicator(x,125,s));
+  ['OSC 1','OSC 2','OSC 3'].forEach((s,i)=>indicator(618+i*49,236,s));
+  ['AF','LP','HP','BP','BS'].forEach((s,i)=>indicator(1326,240+i*15,s));
+  ['FILT 1','FILT 2'].forEach((s,i)=>indicator(1420+i*51,240,s));
+  ['DELAY','REVERB','LOW EQ','MID EQ','HIGH EQ'].forEach((s,i)=>indicator(67+i*85,380,s));
+  ['DISTORTION','CHARACTER','CHORUS','PHASER','OTHERS'].forEach((s,i)=>indicator(67+i*85,500,s));
+  ['WAVE','PW','RESONANCE','FLT GAIN','ASSIGN'].forEach((s,i)=>indicator(458,141+i*17,s));
+  ['OSC 1','OSC 2/3','CUTOFF','SHAPE','FM AMT','PAN'].forEach((s,i)=>indicator(347,233+i*18,s));
   txt(svg,212,140,'DEMOSONG','panel-micro',{'text-anchor':'middle'});
   txt(svg,212,150,'PRESS + HOLD','panel-micro',{'text-anchor':'middle'});
   txt(svg,212,217,'DESTINATION','panel-micro',{'text-anchor':'middle'});
@@ -237,46 +239,49 @@
 
   // Printed black parameter ribbons reproduce the TI2's hierarchy.
   for(const [x,w] of [[601,84],[686,109],[795,90],[886,100],[1230,87],[1327,100]]){
-    create('rect',{x,y:207,width:w,height:15,rx:1,fill:'#151b1c',opacity:'.86'},svg);
+    create('rect',{x,y:202,width:w,height:15,rx:1,fill:'#151b1c',opacity:'.86'},svg);
   }
-  txt(svg,638,217,'SHAPE','panel-ribbon',{'text-anchor':'middle'});
-  txt(svg,742,217,'WAVE SELECT / PW','panel-ribbon',{'text-anchor':'middle'});
-  txt(svg,844,217,'SEMITONE','panel-ribbon',{'text-anchor':'middle'});
-  txt(svg,947,217,'DETUNE 2/3','panel-ribbon',{'text-anchor':'middle'});
-  txt(svg,1278,217,'RESONANCE','panel-ribbon',{'text-anchor':'middle'});
-  txt(svg,1378,217,'ENV AMOUNT','panel-ribbon',{'text-anchor':'middle'});
-  txt(svg,840,333,'PANIC','panel-micro',{'text-anchor':'middle'});
+  txt(svg,638,213,'SHAPE','panel-ribbon',{'text-anchor':'middle'});
+  txt(svg,742,213,'WAVE SELECT / PW','panel-ribbon',{'text-anchor':'middle'});
+  txt(svg,844,213,'SEMITONE','panel-ribbon',{'text-anchor':'middle'});
+  txt(svg,947,213,'DETUNE 2/3','panel-ribbon',{'text-anchor':'middle'});
+  txt(svg,1278,213,'RESONANCE','panel-ribbon',{'text-anchor':'middle'});
+  txt(svg,1378,213,'ENV AMOUNT','panel-ribbon',{'text-anchor':'middle'});
+  txt(svg,840,327,'PANIC','panel-micro',{'text-anchor':'middle'});
 
 
 
   txt(svg,1057,379,'✧','mixer-emblem',{'text-anchor':'middle'});
-  txt(svg,403,619,'TRANSPOSE / POWER','panel-micro',{'text-anchor':'middle'});
+  txt(svg,403,617,'TRANSPOSE / POWER','panel-micro',{'text-anchor':'middle'});
   txt(svg,634,616,'VALUE 1 / CATEGORY','panel-micro',{'text-anchor':'middle'});
   txt(svg,734,616,'VALUE 2 / BANK','panel-micro',{'text-anchor':'middle'});
   txt(svg,830,616,'VALUE 3 / PROGRAM','panel-micro',{'text-anchor':'middle'});
-  // SHIFT layer: condensed secondary legends verified in the official TI user manual.
+  // SHIFT/secondary legends checked against the manufacturer's manual and TI2 photo.
+  // Do not invent a FILTER ATTACK alternate function: it is the ordinary knob label.
   for (const [x,y,label] of [
-    [531,224,'LFO CONTOUR'],[843,232,'PORTAMENTO'],[947,233,'UNISON DETUNE'],
-    [1057,222,'PANORAMA'],[1057,333,'OSC 3 VOLUME'],[1057,499,'SATURATION TYPE'],
-    [1057,644,'RING MODULATOR'],[1281,230,'RESONANCE 2'],[1378,230,'KEY FOLLOW'],
-    [1177,484,'FILTER ATTACK'],[1177,644,'PATCH VOLUME'],
-    [1378,484,'SUSTAIN SLOPE'],[1478,644,'TEMPO'],
+    [531,223,'LFO CONTOUR'],[843,228,'PORTAMENTO'],[947,228,'UNISON DETUNE'],
+    [947,351,'FM MODE'],[1057,222,'PANORAMA'],[1057,333,'OSC 3 VOLUME'],
+    [1057,494,'SATURATION TYPE'],[1057,624,'RING MODULATOR'],
+    [1281,225,'RESONANCE 2'],[1378,225,'KEY FOLLOW'],
+    [185,495,'EQ GAIN'],[292,495,'EQ FREQ'],[392,495,'EQ Q-FACTOR'],
+    [1177,620,'PATCH VOLUME'],[1378,478,'SUSTAIN SLOPE'],
+    [1378,620,'SUSTAIN SLOPE'],[1478,620,'TEMPO'],
   ]) txt(svg,x,y,label,'panel-secondary',{'text-anchor':'middle'});
   // Physical UI references: effect SELECT / EDIT operate on two shared knob rows.
-  txt(svg,146,330,'HOLD','panel-micro',{'text-anchor':'middle'});
+  txt(svg,124,330,'HOLD','panel-micro',{'text-anchor':'middle'});
   txt(svg,952,407,'PART','panel-micro',{'text-anchor':'middle'});
   txt(svg,952,548,'PARAMETERS','panel-micro',{'text-anchor':'middle'});
   txt(svg,952,629,'VALUE / PROGRAM','panel-micro',{'text-anchor':'middle'});
 
 
   // LCD is a physical screen. Readout mirrors the already working Program Change selector.
-  create('rect',{x:574,y:361,width:324,height:155,rx:9,fill:'#12191d',stroke:'#707b7e','stroke-width':3},svg);
-  create('rect',{x:603,y:405,width:266,height:62,rx:2,fill:'url(#display)',stroke:'#182529','stroke-width':2},svg);
-  txt(svg,615,421,'SINGLE', 'lcd-line');
+  create('rect',{x:581,y:364,width:317,height:159,rx:9,fill:'#12191d',stroke:'#707b7e','stroke-width':3},svg);
+  create('rect',{x:608,y:407,width:261,height:66,rx:2,fill:'url(#display)',stroke:'#182529','stroke-width':2},svg);
+  txt(svg,615,423,'SINGLE', 'lcd-line');
   const lcdPatch=txt(svg,615,442,'PROGRAM 001','lcd-title');
-  txt(svg,615,458,'TI2 · OsTIrus','lcd-line');
-  txt(svg,734,499,'OsTIrus / TI²','lcd-logo',{'text-anchor':'middle'});
-  const lcdState=txt(svg,615,465,'','lcd-tiny');
+  txt(svg,615,460,'TI2 · OsTIrus','lcd-line');
+  txt(svg,734,500,'OsTIrus / TI²','lcd-logo',{'text-anchor':'middle'});
+  const lcdState=txt(svg,615,467,'','lcd-tiny');
   const selector=document.getElementById('program');
   const setPatch=()=>{const v=Number(selector.value)+1;
     lcdPatch.textContent='PROGRAM '+String(v).padStart(3,'0');
@@ -286,5 +291,5 @@
   setPatch();
   // Important: knob controls are still output-only. They do not imply reading firmware parameter state.
   const editElement=document.getElementById('ti2-precision-edit');
-  if(editElement)editElement.textContent='PANEL REFERENCE · 32 KNOBS · 42 BUTTONS';
+  if(editElement)editElement.textContent='PANEL v0.7 REFERENCE · 32 KNOBS · 42 BUTTONS · LED STATES NOT SYNCHRONIZED';
 })();
