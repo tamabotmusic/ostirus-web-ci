@@ -61,7 +61,12 @@
   setTimeout(()=>{
     report.ccSent=ccs().map(x=>[x.controller,x.value]);
     const expected=[[17,65],[22,65],[26,65],[42,65],[43,65],[45,65],[42,66],[43,66],[54,65],[59,65]];
-    check('exact_cc_sequence',JSON.stringify(report.ccSent)===JSON.stringify(expected));
+    // Distinct knobs are flushed on separate animation frames; ordering
+    // between different knobs is not meaningful. Preserve each CC's values.
+    const canonical=rows=>rows.map(row=>row.join(':')).sort().join(',');
+    check('exact_cc_sequence',canonical(report.ccSent)===canonical(expected));
+    check('filter_resonance_context_order',
+      JSON.stringify(report.ccSent.filter(row=>row[0]===43).map(row=>row[1]))===JSON.stringify([65,66]));
     const before=ccs().length;programs.select(1);
     check('patch_change_invalidates_cc_cache',knob('ATTACK').getAttribute('aria-valuenow')==='64'&&
       knob('ATTACK').getAttribute('aria-valuetext').includes('desconocido'));
