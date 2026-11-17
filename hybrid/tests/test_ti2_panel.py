@@ -37,6 +37,28 @@ class TI2VectorPanelTests(unittest.TestCase):
         self.assertIn("do not imply reading firmware parameter state",JS)
         self.assertIn("fetch('/api/midi'",JS)
         self.assertIn("if(!response.ok)",JS)
+    def test_user_red_marked_overlap_regressions(self):
+        # Access TI2 Quickstart (2009) and owner photograph: labels must clear caps and contours.
+        self.assertNotIn("M163 111 Q169", JS, "duplicate ARP outline must stay removed")
+        self.assertIn("M164 111 V223 Q164 239", JS)
+        self.assertIn("txt(svg,212,132,'DEMOSONG'", JS)
+        self.assertIn("txt(svg,212,144,'PRESS + HOLD'", JS)
+        self.assertIn("['WAVE','PW','RESO','FILT GAIN','ASSIGN']", JS)
+        self.assertNotIn("['WAVE','PW','RESONANCE','FLT GAIN','ASSIGN']", JS)
+        self.assertIn("label==='FILTER BALANCE'?1462:x", JS)
+        self.assertIn("label.length>13?'knob-caption-long'", JS)
+        self.assertIn("x:62,y:370,width:356,height:16", JS)
+        self.assertIn("x:62,y:499,width:356,height:15", JS)
+        self.assertIn("[392,490,'EQ Q-FACTOR']", JS)
+        self.assertIn("L333 622", JS, "effects notch must join the lower perimeter")
+        self.assertIn("txt(svg,952,553,'PARAMETERS'", JS)
+        self.assertIn("txt(svg,952,562,'BANK'", JS)
+        self.assertIn("txt(svg,952,623,'VALUE'", JS)
+        self.assertIn("[1177,613,'PATCH VOLUME']", JS)
+        self.assertIn("[1378,613,'SUSTAIN SLOPE']", JS)
+        self.assertIn("[1478,613,'TEMPO']", JS)
+        self.assertIn(".knob-caption-long", CSS)
+
     def test_assets_are_local_and_allowlisted(self):
         self.assertIn('"/ti2-precision.js":',SERVER)
         self.assertIn('"/ti2-precision.css":',SERVER)
