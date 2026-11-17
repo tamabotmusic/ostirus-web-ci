@@ -31,7 +31,7 @@ class TI2VectorPanelTests(unittest.TestCase):
     def test_routing_and_status_are_honest(self):
         self.assertRegex(JS,r"\['VOLUME',79,155,31,null\]")
         self.assertIn("control-pending",JS)
-        self.assertIn("VALUES NOT SYNCED",JS)
+        self.assertIn("they do not imply reading firmware parameter state",JS)
         self.assertIn("fetch('/api/midi'",JS)
         self.assertIn("if(!response.ok)",JS)
     def test_assets_are_local_and_allowlisted(self):
