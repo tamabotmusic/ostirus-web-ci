@@ -55,16 +55,17 @@
   wheel('RESONANCE');wheel('ATTACK');wheel('ATTACK',1);
   window.dispatchEvent(new CustomEvent('ti2-local-midi-cc',{detail:{controller:55,value:12}}));
   check('incoming_cc_local_cache',knob('DECAY').getAttribute('aria-valuenow')==='12');
-  const before=ccs().length;programs.select(1);
-  check('patch_change_invalidates_cc_cache',knob('ATTACK').getAttribute('aria-valuenow')==='64'&&
-    knob('ATTACK').getAttribute('aria-valuetext').includes('desconocido'));
-  check('patch_change_no_extra_cc',ccs().length===before);
   check('unmapped_controls_inert',!button('OSC EDIT').hasAttribute('data-action')&&
     !button('FILTER 1').hasAttribute('data-action')&&!button('ARP ON').hasAttribute('data-action'));
+  // Allow the requestAnimationFrame MIDI batches to flush before patch change.
   setTimeout(()=>{
     report.ccSent=ccs().map(x=>[x.controller,x.value]);
     const expected=[[17,65],[22,65],[26,65],[42,65],[43,65],[45,65],[42,66],[43,66],[54,65],[59,65]];
     check('exact_cc_sequence',JSON.stringify(report.ccSent)===JSON.stringify(expected));
+    const before=ccs().length;programs.select(1);
+    check('patch_change_invalidates_cc_cache',knob('ATTACK').getAttribute('aria-valuenow')==='64'&&
+      knob('ATTACK').getAttribute('aria-valuetext').includes('desconocido'));
+    check('patch_change_no_extra_cc',ccs().length===before);
     const pre=document.createElement('pre');pre.id='ti2-v09-functional-audit';pre.hidden=true;
     pre.textContent=JSON.stringify(report);document.body.appendChild(pre);
   },350);
