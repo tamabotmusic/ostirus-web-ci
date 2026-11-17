@@ -66,6 +66,10 @@
   engrave('M164 111 H1506 Q1515 111 1515 122 V333 Q1515 341 1507 341 H1109');
   engrave('M1008 111 V623');
   engrave('M1109 111 V623');
+  // Delicate divider between the shared LFO controls and the OSCILLATORS block.
+  // Its 1.2-unit stroke is deliberately softer than the user's thick markup.
+  create('path',{d:'M592 114 V339',fill:'none',stroke:'#b8c8ca',
+    'stroke-width':1.2,opacity:'.62','data-ti2-lfo-osc-divider':'true'},svg);
   // The original has no strong partition lines separating MATRIX, MODULATORS and OSCILLATORS.
   // Distinctive asymmetrical ARP and effects surround.
   engrave('M164 111 V223 Q164 239 150 239 H50 Q42 239 42 249 V332 Q42 341 51 341 H1008',1.6);
@@ -104,7 +108,7 @@
   // (user's photo mapped to the 1533 × 685 reference frame).
   const knobs = [
     ['VOLUME',79,155,31,null],
-    ['RATE',531,162,27,67],
+    ['RATE',545,162,27,67],
     ['WAVE',638,161,28,17],['WAVE SELECT/PW',742,161,28,19],
     ['SEMITONE',843,161,28,20],['DETUNE 2/3',947,161,28,26],['FM AMOUNT',947,280,27,27],
     ['OSC BALANCE',1057,161,29,33],['SUB OSC VOLUME',1057,276,29,34],
@@ -308,7 +312,7 @@
   // SHIFT/secondary legends checked against the manufacturer's manual and TI2 photo.
   // Do not invent a FILTER ATTACK alternate function: it is the ordinary knob label.
   for (const [x,y,label] of [
-    [531,223,'LFO CONTOUR'],[843,228,'PORTAMENTO'],[947,228,'UNISON DETUNE'],
+    [545,223,'LFO CONTOUR'],[843,228,'PORTAMENTO'],[947,228,'UNISON DETUNE'],
     [947,333,'FM MODE'],[1057,222,'PANORAMA'],[1057,333,'OSC 3 VOLUME'],
     [1057,494,'SATURATION TYPE'],[1057,612,'RING MODULATOR'],
     [1281,225,'RESONANCE 2'],[1378,225,'KEY FOLLOW'],
