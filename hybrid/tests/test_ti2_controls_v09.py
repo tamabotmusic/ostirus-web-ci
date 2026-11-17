@@ -61,7 +61,7 @@ class PhysicalControlTests(unittest.TestCase):
         self.assertIn("status = 0xC0",HOST)
         self.assertIn("bindProgramKey('VALUE +', 1",V08)
         self.assertIn("bindProgramKey('VALUE −', -1",V08)
-        self.assertIn("latestBatch",PANEL) if False else None
+        self.assertIn("const toSend=batches;batches=[];",PANEL)
 
 
 if __name__=="__main__":
