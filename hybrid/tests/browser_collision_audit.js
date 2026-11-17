@@ -55,7 +55,24 @@
       return b.x>lowerBandBounds.x+2 && b.x+b.width<lowerBandBounds.x+lowerBandBounds.width-2 &&
         b.y>lowerBandBounds.y+2 && b.y+b.height<lowerBandBounds.y+lowerBandBounds.height-2;
     });
+  const divider=svg.querySelector('[data-ti2-lfo-osc-divider]');
+  const rateKnob=svg.querySelector('.ti2-knob[data-label="RATE"]');
+  const oscWaveKnob=svg.querySelector('.ti2-knob[data-label="WAVE"]');
+  const parseCenter=node=>{
+    const m=node?.getAttribute('transform')?.match(/translate\\(([-\\d.]+) ([-\\d.]+)\\)/);
+    return m?{x:Number(m[1]),y:Number(m[2])}:null;
+  };
+  const rateCenter=parseCenter(rateKnob),oscCenter=parseCenter(oscWaveKnob);
+  const lfo3Cap=[...svg.querySelectorAll('.ti2-button-group')]
+    .find(node=>node.getAttribute('transform')==='translate(545 288)');
+  const dividerX=divider?.getAttribute('d')?.match(/^M([\\d.]+) /);
+  const lfoOscClear=!!(rateCenter && oscCenter && lfo3Cap && dividerX &&
+    rateCenter.x===545 && rateCenter.y===162 &&
+    rateCenter.x===parseCenter(lfo3Cap).x &&
+    Number(dividerX[1])>rateCenter.x+27+7.6+7 &&
+    Number(dividerX[1])<oscCenter.x-28-7.6-7);
   const manualChecks={
+    lfo_rate_aligned_with_lfo3_and_divider_clear:lfoOscClear,
     lower_effects_strip_contains_all_leds_and_legends:lowerBandClear,
     physical_caps_clear:collisions.length===0,
     mod_reso_clear:reso.length===1 && !overlaps(reso[0],rate),
