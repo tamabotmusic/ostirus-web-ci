@@ -76,7 +76,13 @@
   engrave('M1109 508 H1503 Q1514 508 1514 520 V611 Q1514 622 1504 622 H1109');
   // Black recessed filter-mode and effect-selection bars are added as graphics.
   create('rect',{x:62,y:370,width:356,height:16,rx:1,fill:'#111719',opacity:'.7'},svg);
-  create('rect',{x:62,y:499,width:356,height:15,rx:1,fill:'#111719',opacity:'.65'},svg);
+  // TI2 lower EFFECTS selector: the silver outlined recess ENVELOPS the five
+  // effect LEDs and captions. It must not sit underneath the lettering.
+  create('rect',{x:64,y:498,width:374,height:19,rx:3,fill:'#20282c',
+    stroke:'#a9b9ba','stroke-width':1.2,'data-ti2-effects-lower-strip':'true'},svg);
+  // Hairline drops from the original recessed selector strip to the SELECT key.
+  create('line',{x1:85,y1:517,x2:85,y2:547,stroke:'#9aabad',
+    'stroke-width':1.1,opacity:'.55','data-ti2-effects-lower-connector':'true'},svg);
   // A subtle Mixer emblem guide replaces artificial section cards.
   const sectionTabs = [
     [167,97,'MATRIX'],[289,97,'MODULATORS'],[603,97,'OSCILLATORS'],
@@ -234,10 +240,11 @@
   // The real TI2 OSC selector LEDs sit inside a recessed, rounded strip.
   create('rect',{x:605,y:223,width:174,height:27,rx:2,fill:'#11191c',stroke:'#8ca1a4','stroke-width':.8,opacity:'.8'},svg);
   // All LEDs are neutral: firmware state is not exposed to the web UI.
-  const indicator=(x,y,caption,on=false,anchor='start')=>{
+  const indicator=(x,y,caption,on=false,anchor='start',lowerEffect=false)=>{
     create('circle',{cx:x,cy:y,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
-      'data-state':'unavailable'},svg);
-    txt(svg,x+(anchor==='start'?7:-7),y+2.7,caption,'indicator-caption',{'text-anchor':anchor});
+      'data-state':'unavailable',...(lowerEffect?{'data-ti2-effects-lower-led':caption}:{})},svg);
+    txt(svg,x+(anchor==='start'?7:-7),y+2.7,caption,'indicator-caption',
+      {'text-anchor':anchor,...(lowerEffect?{'data-ti2-effects-lower-label':caption}:{})});
   };
   ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'].forEach((s,i)=>indicator(226,231+i*18,s));
   [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x])=>indicator(x,125,s));
@@ -250,7 +257,11 @@
   });
   ['FILT 1','FILT 2'].forEach((s,i)=>indicator(1420+i*51,240,s));
   ['DELAY','REVERB','LOW EQ','MID EQ','HIGH EQ'].forEach((s,i)=>indicator(67+i*85,380,s));
-  ['DISTORTION','CHARACTER','CHORUS','PHASER','OTHERS'].forEach((s,i)=>indicator(67+i*85,500,s));
+  // Unlike a uniform UI grid, the five original TI2 indicators are unevenly spaced.
+  // These centers were checked against the owner's straight-on TI2 photograph.
+  const effectLowerLEDs=[80,150,232,296,363];
+  ['DISTORTION','CHARACTER','CHORUS','PHASER','OTHERS']
+    .forEach((label,i)=>indicator(effectLowerLEDs[i],508,label,false,'start',true));
   // Actual TI2 photo: top LFO group has waveform symbols, not RESONANCE text.
   const lfoWaves=[
     'M471 125 Q477 116 483 125 T495 125',
