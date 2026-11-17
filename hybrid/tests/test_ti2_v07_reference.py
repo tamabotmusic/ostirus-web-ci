@@ -5,6 +5,7 @@ import unittest
 
 ROOT=Path(__file__).resolve().parents[1]
 DATA=json.loads((ROOT/"reference/TI2_V07_MEASURED_COORDINATES.json").read_text(encoding="utf-8"))
+PANEL=(ROOT/"ui/ti2-precision.js").read_text(encoding="utf-8")
 KNOBS=DATA["knobs"]
 BUTTONS=DATA["buttons"]
 
@@ -35,6 +36,12 @@ class TI2GeometryReferenceTests(unittest.TestCase):
         self.assertEqual(len([x for x in BUTTONS if x["label"].startswith("TRANS ")]),2)
     def test_master_volume_unmapped_until_verified(self):
         self.assertIsNone(next(x["cc"] for x in KNOBS if x["label"]=="VOLUME"))
+    def test_registration_and_unlit_leds(self):
+        self.assertIn("data-registration", PANEL)
+        self.assertIn("const rootSvg", PANEL)
+        self.assertIn("data-state\':\'unavailable", PANEL)
+        self.assertNotIn("i===1", PANEL)
+        self.assertNotIn("FILTER ATTACK\']", PANEL)
     def test_no_rom_in_reference(self):
         body=json.dumps(DATA)
         for prohibited in ("Access Virus TI.bin","/Users/","/mnt/data/","PRIVATE KEY"):
