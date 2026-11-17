@@ -20,14 +20,16 @@ Date: 17 November 2026. **Reference only — no installer and no release.**
 ## Owner's red rectangles — code changes
 1. **MATRIX**: removed a duplicated white divider that intersected the DESTINATION button; raised DEMOSONG and PRESS + HOLD legends.
 2. **ARP**: removed a second line that passed through the ARP silver tab; retain one shared contour.
-3. **MODULATORS**: use the photographed abbreviated **RESO**, not a full RESONANCE word that collides with RATE. Correct FILT GAIN spelling.
-4. **FILTERS**: keep the long FILTER BALANCE caption inside the right contour with a slightly smaller font and left inset.
+3. **MODULATORS**: the photograph shows **waveform symbols** beside the upper SHAPE button, not a stack of WAVE/PW/RESONANCE labels. Replaced that false upper column with four waveform symbols and placed the seven LFO2 destinations (WAVE, CUTOFF 1, CUTOFF 2, SHAPE, FM AMT, PAN, ASSIGN) next to the lower LFO2 selector. Kept the abbreviated RESO and FILT GAIN in the lower LFO1 destination column.
+4. **FILTERS**: keep the long FILTER BALANCE caption inside the right contour with a slightly smaller font and left inset. Photo-verify numeric scales: FILTER BALANCE 0–12, CUTOFF 2 -6/+6, SEMITONE -48/+48.
 5. **EFFECTS**: move both selection LED ribbons to the correct LED rows; lift EQ secondary legends above the lower ribbon; join the upper contour, transpose notch and bottom perimeter into one path.
 6. **MASTER RIGHT**: place PART and PARAMETERS/BANK labels between physical rows; split VALUE and PROGRAM into two distinct legends below the last pair.
-7. **FILTER/AMPLIFIER ENVELOPES**: lift secondary legends from the border line, retaining PATCH VOLUME, SUSTAIN SLOPE and TEMPO.
+7. **FILTER/AMPLIFIER ENVELOPES**: lift secondary legends from the border line, retaining PATCH VOLUME, SUSTAIN SLOPE and TEMPO. Adjust lower scale digits to avoid touching RELEASE.
+8. **LCD**: separate SINGLE status and PROGRAM title, which had overlapping text bounding boxes in the actual Chromium DOM.
 
 ## Validation gate
 - Static regression tests assert the exact corrected text/contour patterns.
+- Headless Chromium performs a real SVG bounding-box audit for all text against 43 keycaps, selected legends against panel contours, and all text/text pairs; the zero-overlap gate is checked automatically.
 - GitHub Actions runs the real panel JavaScript in headless Chromium, checks 32 knob groups and 43 key-cap groups, and exports a ROM-free screenshot for private visual comparison.
 - **Do not approve** until the latest browser render has been inspected against the original, including text-to-cap and text-to-line clearance.
 - Existing native audio host, firmware and patches remain untouched.
