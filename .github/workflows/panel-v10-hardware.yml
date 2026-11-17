@@ -12,7 +12,7 @@ on:
       - 'hybrid/tests/test_ti2_hardware_v10.py'
       - 'hybrid/ui/ti2-controls-v10.js'
       - 'hybrid/tests/browser_hardware_v10_audit.js'
-      - '.github/workflows/panel-v10-controls.yml'
+      - '.github/workflows/panel-v10-hardware.yml'
   workflow_dispatch:
 
 permissions:
