@@ -33,3 +33,9 @@
 
 /* The small ARP tab must not fall back to a large browser serif font. */
 .ti2-photo-svg .section-mini {font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:800;fill:#182426;letter-spacing:.25px;}
+
+/* v0.8: interaction-only affordances; the approved idle face is unchanged. */
+.ti2-photo-svg .ti2-button-group.control-live {cursor:pointer;}
+.ti2-photo-svg .ti2-button-group.control-live:active rect:first-child {stroke:#8fdae8;stroke-width:1.5;}
+.ti2-photo-svg .ti2-button-group.control-live:focus-visible {outline:none;}
+.ti2-photo-svg .ti2-button-group.control-live:focus-visible rect:first-child {stroke:#8fdae8;stroke-width:2;}

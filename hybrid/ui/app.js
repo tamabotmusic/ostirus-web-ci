@@ -73,6 +73,35 @@ function buildKeys() {
   }
 }
 
+// The native host accepts 0..127 Program Change on its current MIDI part.
+ // Centralize selection so the dropdown, physical VALUE controls and incoming
+ // MIDI share one source of truth; no bank or firmware patch-state read is implied.
+let programSendQueue = Promise.resolve();
+function selectProgram(program, transmit = true) {
+  if (!Number.isInteger(program) || program < 0 || program > 127) return false;
+  const select = el("program");
+  select.value = String(program);
+  // 'input' notifies the physical LCD and VALUE 3 knob without triggering
+  // another Program Change through the dropdown's 'change' listener.
+  select.dispatchEvent(new Event("input", { bubbles: true }));
+  if (transmit) {
+    programSendQueue = programSendQueue.catch(() => {}).then(
+      () => sendMidi({ type: "program", program })
+    ).catch(() => showMidiError("No se pudo cambiar el programa"));
+  }
+  return true;
+}
+window.OsTIrusProgram = Object.freeze({
+  select: (program) => selectProgram(program),
+  current: () => Number(el("program").value),
+  step: (delta) => {
+    if (!Number.isInteger(delta)) return false;
+    const current = Number(el("program").value);
+    const next = Math.max(0, Math.min(127, current + delta));
+    return next !== current ? selectProgram(next) : false;
+  },
+});
+
 function buildPrograms() {
   const select = el("program");
   for (let i = 0; i < 128; i++) {
@@ -82,8 +111,7 @@ function buildPrograms() {
     select.appendChild(option);
   }
   select.addEventListener("change", () => {
-    sendMidi({ type: "program", program: Number(select.value) })
-      .catch(() => showMidiError("No se pudo cambiar el programa"));
+    selectProgram(Number(select.value));
   });
 }
 
@@ -162,8 +190,7 @@ function onMidiMessage(event) {
       sendMidi({ type: "cc", controller: data1, value: data2 }).catch(() => {});
       break;
     case 0xc0:
-      el("program").value = String(data1);
-      sendMidi({ type: "program", program: data1 }).catch(() => {});
+      selectProgram(data1);
       break;
     default:
       break;
