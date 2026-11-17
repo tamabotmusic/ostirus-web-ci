@@ -19,14 +19,17 @@ class TI2VectorPanelTests(unittest.TestCase):
         knobs=JS.split("const knobs = [",1)[1].split("const buttons = [",1)[0]
         buttons=JS.split("const buttons = [",1)[1].split("if(knobs.length",1)[0]
         self.assertEqual(len(re.findall(r"\['[^']+',\d+,\d+,\d+,(?:null|\d+)\]",knobs)),32)
-        self.assertEqual(len(re.findall(r"\['[^']+',\d+,\d+\]",buttons)),42)
-        self.assertIn("if(knobs.length!==32 || buttons.length!==42)",JS)
+        self.assertEqual(len(re.findall(r"\['[^']+',\d+,\d+\]",buttons)),43)
+        self.assertIn("if(knobs.length!==32 || buttons.length!==43)",JS)
     def test_hardware_geography_and_shared_sections(self):
         for legend in ("OSC BALANCE","SUB OSC VOLUME","OSC VOLUME","NOISE VOLUME",
                         "WAVE SELECT/PW","FM AMOUNT","FILTER BALANCE","CUTOFF 2",
                         "VALUE 1","VALUE 2","VALUE 3","SHAPE","ENV MODE"):
             self.assertIn(legend,JS)
         self.assertIn("M1008 111 V615",JS)
+        self.assertIn("['TRANS −',386,588]",JS)
+        self.assertIn("['FILTER SELECT LEFT',1432,288]",JS)
+        self.assertIn("['FILTER SELECT RIGHT',1477,288]",JS)
         self.assertIn("M1109 111 V615",JS)
     def test_routing_and_status_are_honest(self):
         self.assertRegex(JS,r"\['VOLUME',79,155,31,null\]")
