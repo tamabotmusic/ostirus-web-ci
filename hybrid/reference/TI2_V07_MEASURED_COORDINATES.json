@@ -6,7 +6,7 @@
     "height": 685,
     "unit": "px"
   },
-  "status": "measured approximation; visual approval pending",
+  "status": "photo overlay corrected 2026-11-17; full rendered UI still requires review",
   "knobs": [
     {
       "label": "VOLUME",
@@ -236,213 +236,218 @@
   "buttons": [
     {
       "label": "ARP EDIT",
-      "x": 82,
-      "y": 286
+      "x": 83,
+      "y": 288
     },
     {
       "label": "ARP ON",
-      "x": 124,
-      "y": 286
+      "x": 127,
+      "y": 288
     },
     {
       "label": "DEST 1",
-      "x": 190,
+      "x": 194,
       "y": 175
     },
     {
       "label": "DEST 2",
-      "x": 234,
+      "x": 237,
       "y": 175
     },
     {
       "label": "MOD SELECT",
-      "x": 193,
-      "y": 285
+      "x": 194,
+      "y": 289
     },
     {
       "label": "MOD EDIT",
-      "x": 309,
-      "y": 177
+      "x": 314,
+      "y": 175
     },
     {
       "label": "ENV MODE",
-      "x": 350,
-      "y": 177
+      "x": 359,
+      "y": 175
     },
     {
       "label": "SHAPE",
-      "x": 418,
-      "y": 177
+      "x": 427,
+      "y": 175
     },
     {
       "label": "LFO 1 SELECT",
-      "x": 309,
-      "y": 285
+      "x": 314,
+      "y": 288
     },
     {
       "label": "LFO 2 SELECT",
-      "x": 421,
-      "y": 285
+      "x": 425,
+      "y": 288
     },
     {
       "label": "LFO 3 SELECT",
-      "x": 543,
-      "y": 285
+      "x": 545,
+      "y": 288
     },
     {
       "label": "OSC SELECT",
-      "x": 621,
-      "y": 287
+      "x": 625,
+      "y": 288
     },
     {
       "label": "OSC EDIT",
-      "x": 663,
-      "y": 287
+      "x": 667,
+      "y": 288
     },
     {
       "label": "OSC 3 ON",
-      "x": 704,
-      "y": 287
+      "x": 710,
+      "y": 288
     },
     {
       "label": "MONO",
-      "x": 821,
-      "y": 287
+      "x": 824,
+      "y": 288
     },
     {
       "label": "SYNC",
-      "x": 865,
-      "y": 287
+      "x": 866,
+      "y": 288
     },
     {
       "label": "FILTER EDIT",
-      "x": 1242,
-      "y": 285
+      "x": 1244,
+      "y": 288
     },
     {
       "label": "FILTER 1",
-      "x": 1284,
-      "y": 285
+      "x": 1286,
+      "y": 288
     },
     {
       "label": "FILTER 2",
-      "x": 1392,
-      "y": 285
+      "x": 1390,
+      "y": 288
     },
     {
-      "label": "FILTER SELECT",
-      "x": 1480,
-      "y": 285
+      "label": "FILTER SELECT LEFT",
+      "x": 1432,
+      "y": 288
+    },
+    {
+      "label": "FILTER SELECT RIGHT",
+      "x": 1477,
+      "y": 288
     },
     {
       "label": "FX TOP SELECT",
-      "x": 78,
-      "y": 440
+      "x": 83,
+      "y": 445
     },
     {
       "label": "FX TOP EDIT",
-      "x": 119,
-      "y": 440
+      "x": 127,
+      "y": 445
     },
     {
       "label": "FX BOTTOM SELECT",
-      "x": 78,
-      "y": 566
+      "x": 83,
+      "y": 568
     },
     {
       "label": "FX BOTTOM EDIT",
-      "x": 119,
-      "y": 566
+      "x": 127,
+      "y": 568
     },
     {
       "label": "EXIT",
-      "x": 497,
-      "y": 375
+      "x": 501,
+      "y": 381
     },
     {
       "label": "TAP",
-      "x": 539,
-      "y": 375
+      "x": 545,
+      "y": 381
     },
     {
       "label": "MASTER EDIT",
-      "x": 497,
-      "y": 451
+      "x": 501,
+      "y": 456
     },
     {
       "label": "CONFIG",
-      "x": 539,
-      "y": 451
+      "x": 545,
+      "y": 456
     },
     {
       "label": "STORE",
-      "x": 497,
-      "y": 518
+      "x": 501,
+      "y": 522
     },
     {
       "label": "UNDO",
-      "x": 539,
-      "y": 518
+      "x": 545,
+      "y": 522
     },
     {
       "label": "SHIFT",
-      "x": 497,
-      "y": 582
+      "x": 501,
+      "y": 588
     },
     {
       "label": "SEARCH",
-      "x": 539,
-      "y": 582
+      "x": 545,
+      "y": 588
     },
     {
       "label": "PART -",
-      "x": 931,
-      "y": 376
+      "x": 935,
+      "y": 381
     },
     {
       "label": "PART +",
-      "x": 973,
-      "y": 376
+      "x": 977,
+      "y": 381
     },
     {
       "label": "MULTI",
-      "x": 931,
-      "y": 451
+      "x": 935,
+      "y": 456
     },
     {
       "label": "SINGLE",
-      "x": 973,
-      "y": 451
+      "x": 977,
+      "y": 456
     },
     {
       "label": "PARAM -",
-      "x": 931,
-      "y": 517
+      "x": 935,
+      "y": 522
     },
     {
       "label": "PARAM +",
-      "x": 973,
-      "y": 517
+      "x": 977,
+      "y": 522
     },
     {
       "label": "VALUE -",
-      "x": 931,
-      "y": 582
+      "x": 935,
+      "y": 588
     },
     {
       "label": "VALUE +",
-      "x": 973,
-      "y": 582
+      "x": 977,
+      "y": 588
     },
     {
       "label": "TRANS -",
-      "x": 382,
-      "y": 565
+      "x": 386,
+      "y": 588
     },
     {
       "label": "TRANS +",
-      "x": 424,
-      "y": 565
+      "x": 428,
+      "y": 588
     }
   ],
   "notes": [
@@ -450,6 +455,15 @@
     "Images and firmware remain strictly local and are not included in GitHub.",
     "This reference is an implementation aid, not certified pixel-exact.",
     "32 knobs/42 tactile keys checked against physical layout and official Virus TI User Manual, especially First Steps pages 21–45.",
-    "Patch positions/LED indicators cannot claim synchronization without reading real state."
-  ]
+    "Patch positions/LED indicators cannot claim synchronization without reading real state.",
+    "The black TI2 photo contains 43 distinct rectangular key caps, including two adjacent FILTER SELECT caps. Previous 42-cap inventory omitted one.",
+    "TRANSPOSE pair y was 565 in source-space, now 588 (approximately 23 photo pixels lower)."
+  ],
+  "coordinate_transform": {
+    "translate_x": -30,
+    "translate_y": -20,
+    "scale_x": 1.018,
+    "scale_y": 1.017,
+    "description": "Apply to all source-space x,y for black-photo pixel alignment"
+  }
 }
