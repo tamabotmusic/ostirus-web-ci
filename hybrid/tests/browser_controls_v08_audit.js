@@ -27,7 +27,7 @@
   check('value3_contextual_no_fake_cc',!!knob && !knob.hasAttribute('data-cc') &&
     knob.getAttribute('role') === 'slider' && knob.getAttribute('aria-valuemax') === '128');
   check('initial_lcd_001',lcd?.textContent === 'PROGRAM 001');
-  const restingAngle = Number(needle?.getAttribute('transform')?.match(/rotate\\(([-\\d.]+)\\)/)?.[1]);
+  const restingAngle = Number(needle?.getAttribute('transform')?.match(/rotate\(([-\d.]+)\)/)?.[1]);
   check('approved_resting_needle_unchanged',Number.isFinite(restingAngle) && Math.abs(restingAngle)<2);
 
   plus.dispatchEvent(new MouseEvent('click', { bubbles: true }));
