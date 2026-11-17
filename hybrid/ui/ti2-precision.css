@@ -42,3 +42,6 @@
 
 /* v0.9: red means LOCAL focus chosen by the user, never a firmware report. */
 .ti2-photo-svg circle[data-state="local"]{fill:#ec4566;stroke:#f6a4b2;filter:drop-shadow(0 0 2.5px #ed385b);}
+
+/* v0.10: only the manually armed physical SHIFT key is highlighted. */
+.ti2-photo-svg .ti2-button-group.control-active rect:nth-of-type(2){stroke:#f0a6b7;stroke-width:1.5;filter:drop-shadow(0 0 2px #d35475);}
