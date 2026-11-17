@@ -31,6 +31,11 @@ class TI2VectorPanelTests(unittest.TestCase):
         self.assertIn("['FILTER SELECT LEFT',1432,288]",JS)
         self.assertIn("['FILTER SELECT RIGHT',1477,288]",JS)
         self.assertIn("M1109 111 V623",JS)
+        self.assertIn("['RATE',545,162,27,67]",JS)
+        self.assertIn("[545,223,'LFO CONTOUR']",JS)
+        self.assertIn("['LFO 3 SELECT',545,288]",JS)
+        self.assertIn("d:'M592 114 V339'",JS)
+        self.assertIn("'stroke-width':1.2,opacity:'.62','data-ti2-lfo-osc-divider':'true'",JS)
     def test_routing_and_status_are_honest(self):
         self.assertRegex(JS,r"\['VOLUME',79,155,31,null\]")
         self.assertIn("control-pending",JS)
