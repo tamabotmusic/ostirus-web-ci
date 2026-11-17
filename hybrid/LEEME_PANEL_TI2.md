@@ -1,34 +1,38 @@
-# OsTIrus — Panel TI2 Desktop v0.5 (primera maqueta funcional)
+# OsTIrus TI2 Desktop — panel v0.6
 
-El objetivo es parecerse al **frontal físico del Virus TI2 Desktop**, no al antiguo plug-in Virus Control. Se utilizan fotografías del hardware y su disposición de secciones como referencia, recreando los mandos con CSS y JavaScript originales, sin integrar fotografías ni logotipos del fabricante.
+## Qué cambia
+Esta es una **actualización visual** del frontal TI2 Desktop, con una distribución más próxima al hardware físico:
+- 32 mandos rotatorios y 42 pulsadores representados;
+- Matrix, Modulators, Oscillators, Mixer y Filters en la fila superior;
+- Effects a la izquierda, LCD y teclas de edición en el centro y Envelopes a la derecha;
+- biseles, marcas de giro, LEDs, chasis de metal y rotulación compacta.
 
-## Distribución
+Los mandos MIDI CC que sí están conectados editan parámetros del **motor nativo real**. Los botones de hardware sin función MIDI aparecen como elementos físicos **sin interacción**. Las posiciones iniciales de los mandos no están sincronizadas con el patch cargado. La reproducción es todavía **una versión experimental de referencia**, no una réplica exacta al píxel.
 
-- **Arriba:** volumen y arpegiador, matrix/modulators, osciladores 1/2, mixer, filtros 1/2.
-- **Abajo:** efectos, LCD y navegación central, performance, envolventes de filtro y amplificador.
-- **Debajo del chasis:** diagnóstico CoreAudio y teclado virtual auxiliar (el auténtico Desktop no tiene teclado).
+## Cómo instalar sin perder la versión que ya suena
+1. Conserva **una copia completa** de tu carpeta `OsTIrus_Web_Nativo` que funciona.
+2. Descarga desde GitHub Actions el artefacto `ostirus-ti2-panel-v06-sin-rom` y descomprímelo.
+3. Descomprime el ZIP interior `OsTIrus_Panel_TI2_v06.zip`.
+4. **Cierra OsTIrus** (el Terminal que mantiene el servidor local activo).
+5. Ejecuta `INSTALAR_PANEL_TI2.command` y selecciona la carpeta **OsTIrus_Web_Nativo** que ya suena.
+6. El instalador crea una carpeta `RESGUARDO_PANEL_...` con copia de `ui/` y `server.py` antes de reemplazarlos.
+7. Abre de nuevo `ABRIR_OSTIRUS_WEB.command`, selecciona tu ROM privada local y recarga Chrome con **Cmd + Shift + R**.
 
-Se han conectado **45 mandos** mediante Control Change del Virus TI. Fuente de referencia: https://midi.guide/d/access/virus-ti/ . Atribución CC BY-SA 4.0 para la tabla de referencia original. Los parámetros se envían al motor TI2 nativo que ya funciona en Mac.
+**No se copia, altera ni sustituye** `bin/ostirus_native_host`, la ROM o los archivos de audio. No requiere compilación nueva.
 
-## Funcionamiento y límites
+## Recuperar el panel anterior
+Cierra OsTIrus, entra en la carpeta `RESGUARDO_PANEL_...` creada por el instalador y copia `server.py` y `ui/` a la carpeta `OsTIrus_Web_Nativo`, sustituyendo las versiones nuevas. Después vuelve a abrir el archivo de arranque.
 
-- Arrastra un knob en vertical, usa rueda, flechas o Home/End. Doble clic: vuelve a la posición visual inicial.
-- Los botones PREV / NEXT envían **Program Change** reutilizando el selector original y el mismo backend local.
-- Las luces de matriz y arp que aún no estén conectadas son **únicamente indicadores visuales**: no se muestran como botones activos.
-- Los valores iniciales visibles no se leen de la ROM ni del patch. Solo después de mover un mando se conoce el valor enviado por esa sesión. El LCD lo advierte. No se afirma que la posición física refleje el sonido actual antes de editarlo.
-- Este panel es la **primera reproducción funcional del chasis**, no la versión final pixel a pixel: faltan elementos de navegación avanzados, botones con funciones multiplexadas, resolución de valores reales al cambiar patch y la edición de FX más profunda.
+## Qué revisar
+- Observa la fidelidad de distribución frente al hardware TI2 Desktop original.
+- Comprueba que sigue sonando y que se puede cambiar de patch desde el selector auxiliar.
+- Prueba **un mando conectado** (por ejemplo Filter Cutoff); los botones físicos representados aún no son clicables.
+- Comprueba el nivel de salida PCM y que el contador de errores siga en cero.
 
-## Instalar sin recompilar (versión de prueba)
+## Seguridad, código y derechos
+Se distribuye exclusivamente HTML, CSS, JavaScript, Python y documentación. **No contiene ROM**, firmware ni motor binario. El nuevo diseño es código original y evita reproducir imágenes completas o logotipos comerciales. El motor original Gearmulator se mantiene local y está sujeto a su licencia GPL.
 
-1. **Conserva una copia del OsTIrus Web Nativo que ya suena.**
-2. Descarga de GitHub Actions el artefacto `ostirus-ti2-panel-preview`.
-3. Descomprime el paquete interior `OsTIrus_Panel_TI2_Preview.zip`.
-4. Cierra el OsTIrus anterior, ejecuta `INSTALAR_PANEL_TI2.command` y selecciona la carpeta de la versión que ya suena.
-5. El instalador copia solo interfaz y servidor, dejando respaldo. **No modifica el motor nativo, CoreAudio ni la ROM**.
-6. Reabre `ABRIR_OSTIRUS_WEB.command` y recarga Chrome con Cmd+Shift+R.
+Referencias: manual de inicio rápido Virus TI2 Desktop y documentación MIDI CC; proyecto independiente no afiliado con Access Music.
 
-En caso de cualquier problema, para volver a la versión anterior sustituye `server.py` y la carpeta `ui/` por las que guardó el instalador en `RESGUARDO_PANEL_...`.
-
-## Siguiente revisión
-
-Comparación visual sistemática de la distribución, dimensiones, tipografía y posición de cada controlador frente a una fotografía frontal del hardware real. Después, sincronización bidireccional de parámetros (requiere decodificar estados del emulador). No subir ROM ni datos propietarios.
+## Próximas etapas
+Comparación milimétrica por grupos de controles, dibujo preciso de posiciones y leyendas, e integración MIDI de botones individuales cuando conozcamos su comportamiento real. Posibilidad futura de editor para Virus TI físico, **fuera del alcance de la v0.6**.
