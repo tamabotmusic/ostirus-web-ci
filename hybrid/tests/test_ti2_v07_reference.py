@@ -13,7 +13,7 @@ class TI2GeometryReferenceTests(unittest.TestCase):
     def test_geometry_counts_and_reference(self):
         self.assertEqual(DATA["reference_frame"], {"width":1533,"height":685,"unit":"px"})
         self.assertEqual(len(KNOBS),32)
-        self.assertEqual(len(BUTTONS),42)
+        self.assertEqual(len(BUTTONS),43)
         self.assertIn("approval pending",DATA["status"])
     def test_all_control_centers_in_bounds(self):
         for item in [*KNOBS,*BUTTONS]:
@@ -34,6 +34,9 @@ class TI2GeometryReferenceTests(unittest.TestCase):
         self.assertEqual(len({x["y"] for x in filters if x["label"]!="CUTOFF 2"}),1)
         self.assertGreater(next(x["y"] for x in filters if x["label"]=="CUTOFF 2"),filters[0]["y"])
         self.assertEqual(len([x for x in BUTTONS if x["label"].startswith("TRANS ")]),2)
+        self.assertEqual(len([x for x in BUTTONS if x["label"].startswith("FILTER SELECT ")]),2)
+        self.assertEqual({x["y"] for x in BUTTONS if x["label"].startswith("TRANS ")},{588})
+        self.assertEqual(DATA["coordinate_transform"], {"translate_x":-30,"translate_y":-20,"scale_x":1.018,"scale_y":1.017,"description":"Apply to all source-space x,y for black-photo pixel alignment"})
     def test_master_volume_unmapped_until_verified(self):
         self.assertIsNone(next(x["cc"] for x in KNOBS if x["label"]=="VOLUME"))
     def test_registration_and_unlit_leds(self):
