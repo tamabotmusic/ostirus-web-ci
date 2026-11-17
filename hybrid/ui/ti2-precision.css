@@ -8,7 +8,8 @@
 .ti2-photo-svg .zone-tab {font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;fill:#172126;letter-spacing:.5px;}
 .ti2-photo-svg .section-tab {font-family:Arial,Helvetica,sans-serif;font-size:8px;font-weight:bold;fill:#1f292b;letter-spacing:.2px;}
 .ti2-photo-svg .panel-legend,.ti2-photo-svg .knob-caption,.ti2-photo-svg .button-caption{font-family:Arial,Helvetica,sans-serif;fill:#e1e9e9;font-weight:650;}
-.ti2-photo-svg .knob-caption {font-size:9px;letter-spacing:.1px;}
+ .ti2-photo-svg .knob-caption {font-size:9px;letter-spacing:.1px;}
+.ti2-photo-svg .knob-caption-long {font-family:Arial,Helvetica,sans-serif;fill:#e1e9e9;font-size:7.7px;letter-spacing:0;font-weight:700;}
 .ti2-photo-svg .button-caption {font-size:7px;letter-spacing:.1px;}
 .ti2-photo-svg .panel-micro {font-family:Arial,Helvetica,sans-serif;fill:#cad6d7;font-size:8px;font-weight:650;}
 .ti2-photo-svg .panel-ribbon {font-family:Arial,Helvetica,sans-serif;fill:#f0f3f3;font-weight:750;font-size:8.5px;letter-spacing:.15px;}
