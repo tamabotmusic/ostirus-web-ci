@@ -64,16 +64,16 @@
   // Upper control silkscreen: one continuous line, with Mixer as a vertical stripe.
   create('rect',{x:1008,y:111,width:101,height:505,fill:'#b4c0c2',opacity:'.19'},svg);
   engrave('M164 111 H1506 Q1515 111 1515 122 V333 Q1515 341 1507 341 H1109');
-  engrave('M1008 111 V615');
-  engrave('M1109 111 V615');
+  engrave('M1008 111 V623');
+  engrave('M1109 111 V623');
   // The original has no strong partition lines separating MATRIX, MODULATORS and OSCILLATORS.
   // Distinctive asymmetrical ARP and effects surround.
   engrave('M166 111 H174 V223 Q174 239 159 239 H50 Q42 239 42 249 V332 Q42 341 51 341 H1008',1.6);
   engrave('M48 353 H453 Q462 353 462 362 V485 Q462 497 450 497 H365');
-  engrave('M48 353 Q40 353 40 365 V599 Q40 613 53 613 H333');
+  engrave('M48 353 Q40 353 40 365 V607 Q40 622 53 622 H333');
   engrave('M334 613 Q340 518 353 518 H462');
   engrave('M1109 367 H1503 Q1514 367 1514 380 V472 Q1514 482 1504 482 H1109');
-  engrave('M1109 508 H1503 Q1514 508 1514 520 V603 Q1514 614 1504 614 H1109');
+  engrave('M1109 508 H1503 Q1514 508 1514 520 V611 Q1514 622 1504 622 H1109');
   // Black recessed filter-mode and effect-selection bars are added as graphics.
   create('rect',{x:172,y:356,width:245,height:16,rx:1,fill:'#111719',opacity:'.7'},svg);
   create('rect',{x:172,y:487,width:245,height:15,rx:1,fill:'#111719',opacity:'.65'},svg);
@@ -152,7 +152,7 @@
     paint();
     const hasRibbon = (y===161 && x>=594 && x<990) ||
       (y===160 && ['RESONANCE','ENV AMOUNT'].includes(label));
-    if (!hasRibbon) txt(svg,x,y+r+14,label,'knob-caption',{'text-anchor':'middle'});
+    if (!hasRibbon) txt(svg,x,y+r+(label.startsWith('VALUE ')?27:14),label,'knob-caption',{'text-anchor':'middle'});
     if(label!=='VOLUME') {
       const bipolar=['SEMITONE','FILTER BALANCE','CUTOFF 2'].includes(label);
       txt(svg,x-r+1,y+r+5,bipolar?'-48':'0','panel-scale');
@@ -257,16 +257,17 @@
 
 
   txt(svg,1057,379,'✧','mixer-emblem',{'text-anchor':'middle'});
-  txt(svg,403,617,'TRANSPOSE / POWER','panel-micro',{'text-anchor':'middle'});
-  txt(svg,634,616,'VALUE 1 / CATEGORY','panel-micro',{'text-anchor':'middle'});
-  txt(svg,734,616,'VALUE 2 / BANK','panel-micro',{'text-anchor':'middle'});
-  txt(svg,830,616,'VALUE 3 / PROGRAM','panel-micro',{'text-anchor':'middle'});
+  txt(svg,403,625,'TRANSPOSE','panel-micro',{'text-anchor':'middle'});
+  txt(svg,403,637,'POWER ON/OFF','panel-secondary',{'text-anchor':'middle'});
+  txt(svg,634,634,'CATEGORY','panel-micro',{'text-anchor':'middle'});
+  txt(svg,734,634,'BANK','panel-micro',{'text-anchor':'middle'});
+  txt(svg,830,634,'PROGRAM','panel-micro',{'text-anchor':'middle'});
   // SHIFT/secondary legends checked against the manufacturer's manual and TI2 photo.
   // Do not invent a FILTER ATTACK alternate function: it is the ordinary knob label.
   for (const [x,y,label] of [
     [531,223,'LFO CONTOUR'],[843,228,'PORTAMENTO'],[947,228,'UNISON DETUNE'],
-    [947,351,'FM MODE'],[1057,222,'PANORAMA'],[1057,333,'OSC 3 VOLUME'],
-    [1057,494,'SATURATION TYPE'],[1057,624,'RING MODULATOR'],
+    [947,333,'FM MODE'],[1057,222,'PANORAMA'],[1057,333,'OSC 3 VOLUME'],
+    [1057,494,'SATURATION TYPE'],[1057,612,'RING MODULATOR'],
     [1281,225,'RESONANCE 2'],[1378,225,'KEY FOLLOW'],
     [185,495,'EQ GAIN'],[292,495,'EQ FREQ'],[392,495,'EQ Q-FACTOR'],
     [1177,620,'PATCH VOLUME'],[1378,478,'SUSTAIN SLOPE'],
