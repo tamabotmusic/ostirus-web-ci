@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#121720">
   <title>OsTIrus Web — TI2 Nativo</title>
   <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./ti2-panel.css">
+  <link rel="stylesheet" href="./ti2-v06.css">
   <script defer src="./app.js"></script>
-  <script defer src="./ti2-panel.js"></script>
+  <script defer src="./ti2-v06.js"></script>
 </head>
 <body>
   <main class="shell">
@@ -22,96 +22,16 @@
     <section class="studio-intro">
       <div>
         <div class="eyebrow">OSTIRUS / HARDWARE PANEL • TI2 DESKTOP</div>
-        <p>Panel inspirado fielmente en la disposición del Virus TI2 Desktop. Los mandos con CC envían cambios al motor real; su posición inicial no se lee todavía del patch.</p>
+        <p>Panel diseñado para respetar la organización física del Virus TI2 Desktop. Los mandos conectados envían CC al motor; los pulsadores aún no implementados se muestran únicamente como referencias.</p>
       </div>
-      <span class="prototype-tag">PANEL v0.5 · EXPERIMENTAL</span>
+      <span class="prototype-tag">PANEL v0.6 · REFERENCIA TI2</span>
     </section>
 
-    <div class="hardware-viewport" aria-label="Panel físico OsTIrus Desktop" tabindex="0">
-      <section class="ti2-chassis" aria-label="OsTIrus TI2 Desktop — panel de control">
-        <div class="ti2-top-strip">
-          <div class="ti2-logo"><span class="ti2-symbol">✦</span><span>OsTIrus<span class="ti2-logo-2">TI²</span></span></div>
-          <div class="ti2-io-legend"><span>USB</span><span>MIDI IN</span><span>MIDI OUT</span><span>MIDI THRU</span></div>
-        </div>
-        <div class="ti2-grid">
-          <div class="ti2-zone ti2-left" aria-label="Volumen y arpegiador">
-            <div class="zone-title">MASTER / ARP</div>
-            <div id="ti2-master" class="ti2-master"></div>
-            <div class="zone-title zone-title-inner">ARPEGGIATOR</div>
-            <div class="ti2-decoration"><span class="ti2-led is-on"></span> ARP</div>
-            <div class="ti2-small-muted">EDIT · ARP ON</div>
-          </div>
-          <div class="ti2-zone ti2-mod" aria-label="Modulación">
-            <div class="zone-title">MATRIX / MODULATORS</div>
-            <div class="matrix-rows">
-              <span class="matrix-note">DESTINATION</span>
-              <span class="matrix-note">SLOT <i class="ti2-led is-on"></i> 1</span>
-              <span class="matrix-note">SLOT <i class="ti2-led"></i> 2</span>
-              <span class="matrix-note">SLOT <i class="ti2-led"></i> 3</span>
-              <span class="matrix-note">SLOT <i class="ti2-led"></i> 4</span>
-              <span class="matrix-note">SLOT <i class="ti2-led"></i> 5</span>
-              <span class="matrix-note">SLOT <i class="ti2-led"></i> 6</span>
-            </div>
-            <div class="zone-divider">LFO 1 / LFO 2</div>
-            <div id="ti2-lfo" class="ti2-control-grid ti2-2col"></div>
-          </div>
-          <div class="ti2-zone ti2-osc" aria-label="Osciladores">
-            <div class="zone-title">OSCILLATORS</div>
-            <div class="zone-minititle">OSC 1 <span class="ti2-led is-on"></span> CLASSIC / WAVETABLE</div>
-            <div id="ti2-osc1" class="ti2-control-grid ti2-4col"></div>
-            <div class="zone-minititle">OSC 2 <span class="ti2-led"></span> CLASSIC / HYPERSAW</div>
-            <div id="ti2-osc2" class="ti2-control-grid ti2-4col"></div>
-          </div>
-          <div class="ti2-zone ti2-mix" aria-label="Mezclador">
-            <div class="zone-title">MIXER</div>
-            <div id="ti2-mixer" class="ti2-control-grid ti2-2col"></div>
-          </div>
-          <div class="ti2-zone ti2-filters" aria-label="Filtros">
-            <div class="zone-title">FILTERS</div>
-            <div class="zone-minititle">FILTER 1 <span class="ti2-led is-on"></span></div>
-            <div id="ti2-filter1" class="ti2-control-grid ti2-4col"></div>
-            <div class="zone-minititle">FILTER 2 <span class="ti2-led"></span></div>
-            <div id="ti2-filter2" class="ti2-control-grid ti2-4col"></div>
-          </div>
-          <div class="ti2-zone ti2-effects" aria-label="Efectos">
-            <div class="zone-title">EFFECTS</div>
-            <div class="ti2-effects-label">DELAY <i class="ti2-led is-on"></i> REVERB <i class="ti2-led"></i> CHORUS <i class="ti2-led is-on"></i></div>
-            <div id="ti2-fx" class="ti2-control-grid ti2-4col"></div>
-          </div>
-          <div class="ti2-zone ti2-screen-wrap" aria-label="Pantalla del sintetizador">
-            <div class="ti2-screen-header">
-              <span class="zone-title">SINGLE / MULTI</span>
-              <span class="ti2-tiny-mark">VALUE · EDIT · CONFIG</span>
-            </div>
-            <div class="ti2-screen">
-              <div class="lcd-top" id="ti2-lcd-mode">SINGLE · TI2 DESKTOP</div>
-              <div class="lcd-patch" id="ti2-lcd-patch">RAM-A 038 · PROGRAM 38</div>
-              <div class="lcd-param" id="ti2-lcd-param">SELECT PARAMETER</div>
-              <div class="lcd-value" id="ti2-lcd-value">REAL MIDI CC · LOCAL ENGINE</div>
-            </div>
-            <div class="ti2-screen-bottom">
-              <div class="ti2-nav">
-                <button id="ti2-prev-patch" type="button" aria-label="Programa anterior">◀ PREV</button>
-                <button id="ti2-next-patch" type="button" aria-label="Programa siguiente">NEXT ▶</button>
-              </div>
-              <div class="ti2-notice-led"><span class="ti2-led is-on"></span> AUDIO / MIDI <span class="ti2-led"></span> EDIT</div>
-            </div>
-          </div>
-          <div class="ti2-zone ti2-perform" aria-label="Controles de interpretación">
-            <div class="zone-title">PERFORMANCE</div>
-            <div id="ti2-performance" class="ti2-control-grid ti2-2col"></div>
-          </div>
-          <div class="ti2-zone ti2-envelopes" aria-label="Envolventes">
-            <div class="zone-title">ENVELOPES</div>
-            <div class="zone-minititle">FILTER ENVELOPE</div>
-            <div id="ti2-filter-env" class="ti2-control-grid ti2-4col"></div>
-            <div class="zone-minititle">AMPLIFIER ENVELOPE</div>
-            <div id="ti2-amp-env" class="ti2-control-grid ti2-4col"></div>
-          </div>
-        </div>
-        <div class="ti2-footline"><span>OS-TI / HARDWARE FRONT PANEL</span><span>DESKTOP · 44.1 kHz · 16-PART SYNTH ENGINE</span></div>
-      </section>
+    <div class="v06-viewport" aria-label="OsTIrus TI2 Desktop frontal completo" tabindex="0">
+      <section id="ti2-v06" class="v06-panel" aria-label="OsTIrus TI2 Desktop: 32 mandos y 42 botones físicos"></section>
     </div>
+
+    <p class="v06-caption">Panel experimental de referencia hardware TI2 Desktop. Los 42 botones se reproducen visualmente; las funciones sin integrar no se pueden pulsar. Los mandos MIDI CC sí controlan el motor nativo, pero su posición no refleja aún el valor de cada patch.</p>
 
     <p class="panel-legend">Gira los mandos arrastrando verticalmente, con la rueda o usando las flechas del teclado. Los parámetros que todavía no admiten lectura desde el firmware no muestran el valor original del patch.</p>
 
