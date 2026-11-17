@@ -3,10 +3,24 @@
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 SRC="$DIR/files"
-if [[ ! -f "$SRC/server.py" || ! -f "$SRC/ui/index.html" || ! -f "$SRC/ui/ti2-panel.js" ]]; then
-  echo "Paquete incompleto: faltan archivos de la interfaz." >&2
-  exit 1
-fi
+# v0.6 includes ti2-v06.js and ti2-v06.css, not v0.5's ti2-panel.js.
+# Check every required file BEFORE selecting/altering the working installation.
+REQUIRED=(
+  "server.py"
+  "ui/index.html"
+  "ui/app.js"
+  "ui/style.css"
+  "ui/ti2-v06.js"
+  "ui/ti2-v06.css"
+)
+for file in "${REQUIRED[@]}"; do
+  if [[ ! -f "$SRC/$file" ]]; then
+    echo "ERROR: Falta $SRC/$file" >&2
+    echo "Descomprime el ZIP interior completo, conservando la carpeta files." >&2
+    read -r -p "Pulsa Enter para cerrar... "
+    exit 1
+  fi
+done
 echo "OsTIrus — Panel TI2 Desktop (experimental)"
 echo "Primero cierra el Terminal que está reproduciendo OsTIrus."
 echo "El motor CoreAudio y el archivo ROM no se modificarán."
