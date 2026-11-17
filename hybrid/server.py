@@ -8,6 +8,7 @@ import argparse
 from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import math
 from pathlib import Path
 import re
 import signal
@@ -24,6 +25,14 @@ MAX_POST_BYTES = 512
 MIDI_RANGE = range(128)
 HEALTH_RE = re.compile(
     r"^\[OSTIRUS_HEALTH\] blocks=(\d+) peak=([+-]?\d+(?:\.\d+)?) pair=(\d+) errors=(\d+)$"
+)
+# Only the scalar indicators emitted by Gearmulator's DSP FrontpanelState.
+# Not patch values, mode, program name, selection focus, or raw SysEx.
+FLOAT_RE = r"([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)"
+FRONT_RE = re.compile(
+    r"^\[OSTIRUS_FRONT\] revision=(\d+) lfo1=" + FLOAT_RE +
+    r" lfo2=" + FLOAT_RE + r" lfo3=" + FLOAT_RE +
+    r" bpm=" + FLOAT_RE + r" logo=" + FLOAT_RE + r" activity=(\d+)$"
 )
 
 
@@ -79,6 +88,8 @@ class NativeHost:
         self.pair = 0
         self.errors = 0
         self.last_health = None
+        self.frontpanel = None
+        self.last_frontpanel = None
         self.messages = deque(maxlen=6)
         threading.Thread(target=self._read_stderr, daemon=True).start()
         threading.Thread(target=self._ping_loop, daemon=True).start()
@@ -87,6 +98,7 @@ class NativeHost:
         for raw in self.process.stderr:
             line = raw.strip()
             health = HEALTH_RE.fullmatch(line)
+            front = FRONT_RE.fullmatch(line)
             with self._state_lock:
                 if line.startswith("[OSTIRUS_READY]"):
                     self.ready = True
@@ -96,6 +108,23 @@ class NativeHost:
                     self.pair = int(health.group(3))
                     self.errors = int(health.group(4))
                     self.last_health = time.monotonic()
+                elif front:
+                    revision = int(front.group(1))
+                    levels = [float(front.group(i)) for i in (2, 3, 4)]
+                    bpm, logo = float(front.group(5)), float(front.group(6))
+                    activity = int(front.group(7))
+                    if (revision > 0 and all(math.isfinite(v) for v in levels + [bpm, logo])
+                            and 0 <= activity <= 65535
+                            and (self.frontpanel is None or revision >= self.frontpanel["revision"])):
+                        self.frontpanel = {
+                            "source": "dsp-frontpanel",
+                            "revision": revision,
+                            "lfoLedLevels": levels,
+                            "bpmLedLevel": bpm,
+                            "logoLedLevel": logo,
+                            "midiActivityMask": activity,
+                        }
+                        self.last_frontpanel = time.monotonic()
                 elif line.startswith("[OSTIRUS_ERROR]"):
                     # Do not propagate arbitrary firmware paths or exception text into the UI.
                     self.messages.append("El motor nativo ha comunicado un error.")
@@ -123,6 +152,12 @@ class NativeHost:
     def status(self):
         with self._state_lock:
             up = self.process.poll() is None
+            # Never report stale or nonexistent DSP indicators as live.
+            feedback = None
+            if (up and self.frontpanel is not None and self.last_frontpanel is not None
+                    and time.monotonic() - self.last_frontpanel < 3.0):
+                feedback = dict(self.frontpanel)
+                feedback["ageSeconds"] = round(time.monotonic() - self.last_frontpanel, 2)
             return {
                 "nativeRunning": up,
                 "nativeReady": up and self.ready,
@@ -133,6 +168,7 @@ class NativeHost:
                 "healthAgeSeconds": None if self.last_health is None
                     else round(time.monotonic() - self.last_health, 1),
                 "messages": list(self.messages),
+                "dspFrontpanel": feedback,
                 "architecture": "Native CoreAudio · local MIDI via HTTP",
                 "firmware": "Fichero local, nunca enviado al navegador",
             }
