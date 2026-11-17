@@ -24,7 +24,7 @@ Manufacturer documentation:
 | Amp envelope | 4 | ATTACK, DECAY, SUSTAIN, RELEASE |
 | **Total** | **32** | |
 
-## PHYSICAL INVENTORY — 42 tactile buttons
+## PHYSICAL INVENTORY — 43 visible key caps (42 buttons in manufacturer overview)
 
 | Region | Quantity | Buttons |
 | --- | ---: | --- |
@@ -32,12 +32,20 @@ Manufacturer documentation:
 | Matrix | 3 | DESTINATION ↓, DESTINATION ↑, MOD SELECT |
 | Modulators | 6 | EDIT, ENV MODE, SHAPE, LFO 1 SELECT, LFO 2 SELECT, LFO 3 SELECT |
 | Oscillators | 5 | OSC SELECT, OSC EDIT, OSC 3 ON, MONO, SYNC |
-| Filters | 4 | EDIT, FILT 1 MODE, FILT 2 MODE, FILT 1/2 SELECT |
+| Filters | 5 | EDIT, FILT 1 MODE, FILT 2 MODE, FILT 1 SELECT, FILT 2 SELECT (two adjacent caps under SELECT) |
 | Effects | 4 | SELECT and EDIT for upper row; SELECT and EDIT for lower row |
 | Left LCD navigation | 8 | EXIT, TAP, EDIT, CONFIG, STORE, UNDO, SHIFT, SEARCH |
 | Right LCD navigation | 8 | PART −, PART +, MULTI, SINGLE, PARAMETER −, PARAMETER +, VALUE −, VALUE + |
 | Transpose | 2 | TRANSPOSE −, TRANSPOSE + |
-| **Total** | **42** | |
+| **Total visible caps** | **43** | Photograph has one more distinct rectangular cap than the 42-button overview count; terminology remains under review |
+
+## Photo overlay correction (17 Nov 2026)
+
+- Local overlay used the user's black reference photograph at 1533×685. The initial source-space positions were globally offset; a registered transform `translate(-30 -20) scale(1.018 1.017)` aligns the panel outline and the majority of control centers.
+- The TRANSPOSE key pair was the largest obvious outlier (around 23 px too high after registration); source-space y is corrected to 588.
+- LCD navigation and LFO/MATRIX buttons are corrected by a few pixels; physical key cap shapes increase from 36×35 to 41×42 source units.
+- The photo clearly shows **five FILTERS key caps**: EDIT, FILT1, FILT2 and two adjacent SELECT caps. The 43-cap visual inventory is intentionally distinguished from the manufacturer's 42-button count. This discrepancy needs terminology review, not deletion of a visible key.
+- Photograph and marked-up comparison remain local; they are not committed to the repository.
 
 ## Important behavior verified in the official Quickstart
 
