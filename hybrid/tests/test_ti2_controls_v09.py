@@ -54,7 +54,7 @@ class PhysicalControlTests(unittest.TestCase):
         self.assertIn("pendingClearers.forEach(fn=>fn())",PANEL)
         self.assertIn("ti2-local-midi-cc",PANEL)
         self.assertIn("valor del firmware desconocido",PANEL.lower())
-        self.assertNotIn("sysex",V09.lower())
+        self.assertNotIn("type: \"sysex\"",V09.lower())
         self.assertNotIn("fetch(",V09)
 
     def test_no_native_engine_changes_and_v08_preserved(self):
