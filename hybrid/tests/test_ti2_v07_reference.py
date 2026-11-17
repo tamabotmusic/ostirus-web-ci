@@ -28,7 +28,7 @@ class TI2GeometryReferenceTests(unittest.TestCase):
         mix=[x for x in KNOBS if x["label"] in {"OSC BALANCE","SUB OSC VOLUME","OSC VOLUME","NOISE VOLUME"}]
         self.assertEqual(len(mix),4)
         self.assertEqual(len({x["x"] for x in mix}),1)
-        self.assertEqual(len([x for x in KNOBS if x["label"] in {"SEND","TIME/COLOR","FEEDBACK","TYPE/MIX","INTENSITY"}]),5)
+        self.assertEqual(len([x for x in KNOBS if x["label"] in {"SEND","TIME/COLOR","FEEDBACK/DAMPING","TYPE/MIX","INTENSITY"}]),5)
         filters=[x for x in KNOBS if x["label"] in {"CUTOFF","RESONANCE","ENV AMOUNT","FILTER BALANCE","CUTOFF 2"}]
         self.assertEqual(len(filters),5)
         self.assertEqual(len({x["y"] for x in filters if x["label"]!="CUTOFF 2"}),1)
