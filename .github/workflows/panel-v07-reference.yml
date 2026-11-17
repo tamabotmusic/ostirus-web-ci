@@ -1,11 +1,15 @@
-name: OsTIrus TI2 v0.7 geometric checks (NO RELEASE)
+name: OsTIrus TI2 v0.7 photo geometry + browser preview (NO RELEASE)
 
 on:
   push:
     branches:
       - feature/ti2-frontpanel-v07-reference
     paths:
+      - 'hybrid/ui/ti2-precision.js'
+      - 'hybrid/ui/ti2-precision.css'
+      - 'hybrid/ui/index.html'
       - 'hybrid/reference/TI2_V07_*'
+      - 'hybrid/tests/test_ti2_panel.py'
       - 'hybrid/tests/test_ti2_v07_reference.py'
       - '.github/workflows/panel-v07-reference.yml'
   workflow_dispatch:
@@ -14,16 +18,52 @@ permissions:
   contents: read
 
 jobs:
-  geometry-check:
+  geometry-and-browser-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify geometry and physical inventory without ROM
-        run: python -m unittest discover -s hybrid/tests -p test_ti2_v07_reference.py -v
+      - name: Verify geometry and source code without ROM
+        run: |
+          python -m unittest discover -s hybrid/tests -p test_ti2_v07_reference.py -v
+          python -m unittest discover -s hybrid/tests -p test_ti2_panel.py -v
+          node --check hybrid/ui/ti2-precision.js
+      - name: Create a ROM-free browser preview from the actual panel JavaScript
+        run: |
+          cat > hybrid/ti2-v07-preview.html <<'HTML'
+          <!doctype html>
+          <html lang="es"><head><meta charset="utf-8">
+          <link rel="stylesheet" href="./ui/ti2-precision.css">
+          <style>html,body{margin:0;background:#151c20} .ti2-precision-wrap{width:1533px;max-width:none;margin:0} #ti2-precision{width:1533px;height:685px;overflow:hidden} #program,#ti2-precision-edit{display:none}</style>
+          </head><body><div class="ti2-precision-wrap"><div id="ti2-precision"></div></div>
+          <select id="program"><option value="0">Program 001</option></select>
+          <p id="ti2-precision-edit"></p>
+          <script src="./ui/ti2-precision.js"></script></body></html>
+          HTML
+          BROWSER="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$BROWSER"
+          "$BROWSER" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --window-size=1533,740 --virtual-time-budget=2500 --screenshot="$PWD/ti2-v07-browser-preview.png" "file://$PWD/hybrid/ti2-v07-preview.html"
+          test -s ti2-v07-browser-preview.png
+          "$BROWSER" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=2500 --dump-dom "file://$PWD/hybrid/ti2-v07-preview.html" > ti2-v07-browser-dom.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          dom=Path('ti2-v07-browser-dom.html').read_text(encoding='utf-8')
+          knobs=len(re.findall(r'class="ti2-knob(?:\s|")',dom))
+          buttons=len(re.findall(r'class="ti2-button-group(?:\s|")',dom))
+          print(f'Browser-rendered physical inventory: {knobs} knobs, {buttons} key caps')
+          assert (knobs,buttons)==(32,43),(knobs,buttons)
+          PY
+      - name: Publish screenshot for visual review only (never a release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ostirus-ti2-v07-browser-preview-no-rom
+          path: ti2-v07-browser-preview.png
+          retention-days: 14
+          if-no-files-found: error
       - name: Check release gate
         run: |
           echo 'Status: NOT APPROVED for distribution.'
