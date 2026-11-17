@@ -6,7 +6,7 @@
     "height": 685,
     "unit": "px"
   },
-  "status": "photo overlay corrected 2026-11-17; full rendered UI still requires review",
+  "status": "photo overlay corrected 2026-11-17; full browser render and final visual approval pending",
   "knobs": [
     {
       "label": "VOLUME",
@@ -135,7 +135,7 @@
       "cc": null
     },
     {
-      "label": "FEEDBACK",
+      "label": "FEEDBACK/DAMPING",
       "x": 392,
       "y": 436,
       "r": 28,
