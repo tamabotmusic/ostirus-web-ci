@@ -1,58 +1,55 @@
-"""Verifica estructura y asignaciones CC del panel, sin ejecutar firmware."""
+"""Estructura y fidelidad cuantitativa de la v0.6 TI2 Desktop sin ROM."""
 from pathlib import Path
 import re
 import unittest
 
 BASE = Path(__file__).resolve().parents[1]
-HTML = (BASE / "ui/index.html").read_text(encoding="utf-8")
-CONTROLS = (BASE / "ui/ti2-panel.js").read_text(encoding="utf-8")
-STYLE = (BASE / "ui/ti2-panel.css").read_text(encoding="utf-8")
-SERVER = (BASE / "server.py").read_text(encoding="utf-8")
+HTML = (BASE/"ui/index.html").read_text(encoding="utf-8")
+JS = (BASE/"ui/ti2-v06.js").read_text(encoding="utf-8")
+CSS = (BASE/"ui/ti2-v06.css").read_text(encoding="utf-8")
+SERVER = (BASE/"server.py").read_text(encoding="utf-8")
 
 
-class TI2FrontPanelTests(unittest.TestCase):
-    def test_all_hardware_sections_exist(self):
-        for section in ("ti2-master", "ti2-lfo", "ti2-osc1", "ti2-osc2",
-                        "ti2-mixer", "ti2-filter1", "ti2-filter2", "ti2-fx",
-                        "ti2-performance", "ti2-filter-env", "ti2-amp-env"):
-            with self.subTest(region=section):
-                self.assertIn('id="' + section + '"', HTML)
-                self.assertIn('"' + section + '": [', CONTROLS)
+class TI2PhysicalPanelTests(unittest.TestCase):
+    def test_front_panel_root_and_resources(self):
+        for value in ('id="ti2-v06"', 'ti2-v06.css', 'ti2-v06.js'):
+            self.assertIn(value, HTML)
+        self.assertNotIn('src="./ti2-panel.js"', HTML)
+        self.assertNotIn('href="./ti2-panel.css"', HTML)
 
-    def test_real_midi_cc_assignments_and_unique_numbers(self):
-        pairs = re.findall(r'\["[^"]+",(\d+),(\d+),(\d+)\]', CONTROLS)
-        self.assertEqual(len(pairs), 45)
-        nums = [int(num) for num, _maximum, _initial in pairs]
-        self.assertEqual(len(nums), len(set(nums)))
-        self.assertTrue(all(0 <= cc < 128 for cc in nums))
-        self.assertTrue(all(0 <= int(initial) <= int(maximum) <= 127 for _cc, maximum, initial in pairs))
-        for cc in (40, 41, 42, 43, 54, 55, 56, 58, 59, 60, 61, 63,
-                   17, 22, 67, 79, 104, 114, 115):
-            self.assertIn(cc, nums)
+    def test_32_rotary_controls(self):
+        part = JS.split("const dialGroups = {",1)[1].split("const keys = {",1)[0]
+        dials = re.findall(r'\["[^"]+",(?:\d+|null),\d+\]',part)
+        self.assertEqual(len(dials),32)
 
-    def test_panel_is_real_control_not_static_image(self):
-        self.assertIn('new Event("change"', CONTROLS)
-        self.assertIn('role", "slider"', CONTROLS)
-        self.assertIn('type: "cc", controller: cc, value', CONTROLS)
-        self.assertIn('requestAnimationFrame', CONTROLS)
-        self.assertIn('pointermove', CONTROLS)
-        self.assertIn('keydown', CONTROLS)
+    def test_42_hardware_buttons(self):
+        part = JS.split("const keys = {",1)[1].split("const numKnobs",1)[0]
+        labels = re.findall(r'"([^"]+)"',part)
+        self.assertEqual(len(labels),42)
 
-    def test_server_serves_only_known_panel_assets(self):
-        for filename in ("ti2-panel.js", "ti2-panel.css"):
-            self.assertIn('"/' + filename + '":', SERVER)
-            self.assertIn(filename, HTML)
+    def test_live_filter_and_envelopes_are_preserved(self):
+        for cc in (40,41,42,43,44,48,54,55,56,58,59,60,61,63):
+            self.assertRegex(JS, r',"'+str(cc)+r'",')
 
-    def test_visual_chassis_hardware_layout(self):
-        self.assertIn("ti2-chassis", HTML)
-        self.assertIn("ti2-screen", HTML)
-        self.assertIn("ti2-knob-disc", STYLE)
-        self.assertIn("ti2-grid", STYLE)
-        self.assertIn("ti2-control-grid", STYLE)
+    def test_only_knobs_send_midi(self):
+        self.assertIn("type:'cc',controller:cc,value",JS)
+        self.assertIn("v06-hard-button",JS)
+        self.assertIn("integración pendiente",JS)
+        self.assertIn("KNOB VALUES NOT YET SYNCHRONIZED",JS)
 
-    def test_presets_not_claimed_as_firmware_backed(self):
-        self.assertIn("VALORES ORIGINALES NO LEÍDOS", CONTROLS)
+    def test_panel_layout_areas(self):
+        for klass in ("v06-master","v06-matrix","v06-modulators","v06-oscillators","v06-mixer",
+                      "v06-filters","v06-effects","v06-center","v06-envelopes",
+                      "v06-knob","v06-lcd","v06-button-face"):
+            self.assertIn("."+klass,CSS)
+        self.assertIn("grid-template-columns", CSS)
+        self.assertIn("grid-template-rows", CSS)
+
+    def test_panel_assets_served_only_from_allowlist(self):
+        self.assertIn('"/ti2-v06.js":',SERVER)
+        self.assertIn('"/ti2-v06.css":',SERVER)
+        self.assertIn("UI_DIR / entry[0]",SERVER)
 
 
-if __name__ == "__main__":
+if __name__=="__main__":
     unittest.main()
