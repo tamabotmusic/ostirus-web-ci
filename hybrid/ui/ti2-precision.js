@@ -69,7 +69,7 @@
   // The original has no strong partition lines separating MATRIX, MODULATORS and OSCILLATORS.
   // Distinctive asymmetrical ARP and effects surround.
   engrave('M164 111 V223 Q164 239 150 239 H50 Q42 239 42 249 V332 Q42 341 51 341 H1008',1.6);
-  engrave('M48 353 H453 Q462 353 462 362 V500 Q462 518 448 518 H353 Q339 518 336 535 L333 622');
+  engrave('M48 353 H453 Q462 353 462 362 V508 Q462 526 448 526 H353 Q339 526 336 543 L333 622');
   engrave('M48 353 Q40 353 40 365 V607 Q40 622 53 622 H333');
   // The notch is joined to the upper contour and the lower perimeter at (333,622).
   engrave('M1109 367 H1503 Q1514 367 1514 380 V472 Q1514 482 1504 482 H1109');
