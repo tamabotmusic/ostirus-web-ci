@@ -27,3 +27,5 @@
 
 .ti2-photo-svg .panel-scale {font:650 8px Arial,Helvetica,sans-serif; fill:#cad5d5;}
 .ti2-photo-svg .panel-secondary {font:600 7px Arial,Helvetica,sans-serif; fill:#b3cdcf; opacity:.78;}
+/* Preserve physical panel width while keeping diagnostics and keyboard below. */
+.shell{width:min(1650px,calc(100% - 30px));}
