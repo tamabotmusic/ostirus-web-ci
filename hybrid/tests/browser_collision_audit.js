@@ -44,6 +44,8 @@
     physical_caps_clear:collisions.length===0,
     mod_reso_clear:reso.length===1 && !overlaps(reso[0],rate),
     lfo_waveform_symbols:svg.querySelectorAll('[data-ti2-waveform]').length===4,
+    two_filter_mode_columns:svg.querySelectorAll('[data-ti2-filter-mode-right]').length===5,
+    oscillator_wave_label:byText('WAVE').length>=2,
     no_text_to_text_overlap:uniquePairs.length===0,
     filter_balance_inside_chassis:filterBalance.length===1 && filterBalance[0].x+filterBalance[0].w<1513,
     fx_eq_above_lower_ribbon:['EQ GAIN','EQ FREQ','EQ Q-FACTOR'].every(t=>allInside(t,499)),
