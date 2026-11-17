@@ -151,6 +151,10 @@
     paint();
     const hasRibbon = (y===161 && x>=594 && x<990) ||
       (y===160 && ['RESONANCE','ENV AMOUNT'].includes(label));
+    if(label==='WAVE' && x===638) {
+      txt(svg,609,196,'WAVE','knob-caption',{'text-anchor':'middle'});
+      create('path',{d:'M665 193 V186 H672 V193 H680',fill:'none',stroke:'#dce7e6','stroke-width':1.6,'stroke-linejoin':'round'},svg);
+    }
     if (!hasRibbon) {
       // Keep silkscreen inside the photo's section borders; long captions use a smaller face.
       const captionY=(y===563 && x>=1100)?y+r+12:y+r+(label.startsWith('VALUE ')?27:14);
@@ -158,7 +162,8 @@
       const captionClass=label.length>13?'knob-caption-long':'knob-caption';
       txt(svg,captionX,captionY,label,captionClass,{'text-anchor':'middle'});
     }
-    if(label!=='VOLUME') {
+    if(label!=='VOLUME' && label!=='WAVE') {
+      // The first OSC WAVE encoder uses waveform glyphs, not a 0/12 scale.
       // The black TI2 silkscreen shows CUTOFF 2 as -6/+6; FILTER BALANCE as 0/12.
       const left=label==='SEMITONE'?'-48':label==='CUTOFF 2'?'-6':'0';
       const right=label==='SEMITONE'?'+48':label==='CUTOFF 2'?'+6':'12';
@@ -226,6 +231,8 @@
   txt(svg,1454,318,'SELECT','button-caption',{'text-anchor':'middle'});
 
   // Matrix / LFO / filter and effects status indicators, all physical-position references.
+  // The real TI2 OSC selector LEDs sit inside a recessed, rounded strip.
+  create('rect',{x:605,y:223,width:174,height:27,rx:2,fill:'#11191c',stroke:'#8ca1a4','stroke-width':.8,opacity:'.8'},svg);
   // All LEDs are neutral: firmware state is not exposed to the web UI.
   const indicator=(x,y,caption,on=false,anchor='start')=>{
     create('circle',{cx:x,cy:y,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
@@ -235,7 +242,12 @@
   ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'].forEach((s,i)=>indicator(226,231+i*18,s));
   [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x])=>indicator(x,125,s));
   ['OSC 1','OSC 2','OSC 3'].forEach((s,i)=>indicator(618+i*49,236,s));
-  ['AF','LP','HP','BP','BS'].forEach((s,i)=>indicator(1326,240+i*15,s));
+  ['AF','LP','HP','BP','BS'].forEach((s,i)=>{
+    indicator(1326,240+i*15,s);
+    // One physical mode LED column per filter, as in the TI2 photo.
+    create('circle',{cx:1362,cy:240+i*15,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
+      'data-state':'unavailable','data-ti2-filter-mode-right':s},svg);
+  });
   ['FILT 1','FILT 2'].forEach((s,i)=>indicator(1420+i*51,240,s));
   ['DELAY','REVERB','LOW EQ','MID EQ','HIGH EQ'].forEach((s,i)=>indicator(67+i*85,380,s));
   ['DISTORTION','CHARACTER','CHORUS','PHASER','OTHERS'].forEach((s,i)=>indicator(67+i*85,500,s));
