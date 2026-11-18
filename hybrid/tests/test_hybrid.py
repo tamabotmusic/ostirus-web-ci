@@ -260,9 +260,13 @@ class LocalHTTPTests(unittest.TestCase):
         with self.request("/") as response:
             html = response.read().decode("utf-8")
             self.assertIn("OsTIrus", html)
-            self.assertIn("PANEL v0.13", html)
+            self.assertIn("PANEL v0.14", html)
             self.assertIn("nosniff", response.headers["X-Content-Type-Options"])
         with self.request("/ti2-dsp-lfo-v13.js") as response:
+            self.assertEqual(response.status, 200)
+            self.assertIn("javascript", response.headers["Content-Type"])
+            self.assertGreater(len(response.read()), 100)
+        with self.request("/ti2-dsp-logo-v14.js") as response:
             self.assertEqual(response.status, 200)
             self.assertIn("javascript", response.headers["Content-Type"])
             self.assertGreater(len(response.read()), 100)
