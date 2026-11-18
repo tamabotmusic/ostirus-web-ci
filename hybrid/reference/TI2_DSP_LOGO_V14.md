@@ -29,3 +29,7 @@ El emblema conserva el mismo color y opacidad de reposo si el servidor no entreg
 6. Comunicar si el brillo del emblema varía, permanece fijo o se ve demasiado intenso. Una captura estática solo verifica presencia, no animación.
 
 **Condición de aprobación:** pruebas automatizadas + resultado auditivo/visual en Mac. La v0.14 no se considera equivalente a todo el hardware TI2; solo añade un indicador DSP verificable.
+
+## Distribución experimental
+
+El build Apple Silicon se genera en GitHub Actions mediante el flujo `OsTIrus Native macOS (sin firmware)`. El archivo ZIP incluye el servidor, todos los scripts del frontal y un ejecutable nativo reconstruido sin ROM. Instalarlo solo en una carpeta separada, nunca encima de la v0.09 o la v0.13 confirmada.
