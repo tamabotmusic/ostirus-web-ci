@@ -59,7 +59,7 @@ jobs:
           mkdir -p dist/OsTIrus_Web_Nativo/bin dist/OsTIrus_Web_Nativo/ui
           cp build/native/ostirus_native_host dist/OsTIrus_Web_Nativo/bin/
           cp hybrid/server.py dist/OsTIrus_Web_Nativo/
-          cp hybrid/ui/index.html hybrid/ui/style.css hybrid/ui/app.js dist/OsTIrus_Web_Nativo/ui/
+          cp hybrid/ui/* dist/OsTIrus_Web_Nativo/ui/
           cp hybrid/ABRIR_OSTIRUS_WEB.command hybrid/LEEME.md dist/OsTIrus_Web_Nativo/
           chmod 755 dist/OsTIrus_Web_Nativo/bin/ostirus_native_host
           chmod 755 dist/OsTIrus_Web_Nativo/ABRIR_OSTIRUS_WEB.command

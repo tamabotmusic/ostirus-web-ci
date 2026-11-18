@@ -47,6 +47,69 @@ class ValidationTests(unittest.TestCase):
         # An irrelevant path key is ignored, never used by the server.
         self.assertEqual(server_module.midi_line(bad[-1]), "NOTE 60 100")
 
+    def test_native_health_accepts_scientific_peak_values(self):
+        """Quiet DSP peaks must not freeze the CoreAudio block counter."""
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            engine = base / "fake-quiet-engine"
+            engine.write_text('''#!/usr/bin/env python3
+import sys
+print("[OSTIRUS_READY] audio=CoreAudio rate=44100", file=sys.stderr, flush=True)
+for line in sys.stdin:
+    if line.strip() == "PING":
+        print("[OSTIRUS_HEALTH] blocks=33579 peak=1.2e-05 pair=0 errors=0", file=sys.stderr, flush=True)
+    elif line.strip() == "STOP":
+        break
+''', encoding="utf-8")
+            engine.chmod(engine.stat().st_mode | stat.S_IXUSR)
+            firmware = base / "fake-firmware.bin"
+            firmware.write_bytes(b"test only")
+            host = server_module.NativeHost(str(engine), str(firmware))
+            try:
+                deadline = time.monotonic() + 3
+                while time.monotonic() < deadline and host.status()["blocks"] == 0:
+                    time.sleep(0.05)
+                status = host.status()
+                self.assertEqual(status["blocks"], 33579)
+                self.assertEqual(status["peak"], 0.000012)
+                self.assertLess(status["healthAgeSeconds"], 3)
+            finally:
+                host.stop()
+                host.process.stdin.close()
+                host.process.stderr.close()
+
+    def test_native_health_ignores_nonfinite_peak_values(self):
+        """Malformed large exponents cannot poison the JSON status endpoint."""
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            engine = base / "fake-overflow-engine"
+            engine.write_text('''#!/usr/bin/env python3
+import sys
+print("[OSTIRUS_READY] audio=CoreAudio rate=44100", file=sys.stderr, flush=True)
+for line in sys.stdin:
+    if line.strip() == "PING":
+        print("[OSTIRUS_HEALTH] blocks=77 peak=1e999 pair=0 errors=0", file=sys.stderr, flush=True)
+        print("[OSTIRUS_FRONT] revision=1 lfo1=0 lfo2=0 lfo3=0 bpm=0 logo=0 activity=0", file=sys.stderr, flush=True)
+    elif line.strip() == "STOP":
+        break
+''', encoding="utf-8")
+            engine.chmod(engine.stat().st_mode | stat.S_IXUSR)
+            firmware = base / "fake-firmware.bin"
+            firmware.write_bytes(b"test only")
+            host = server_module.NativeHost(str(engine), str(firmware))
+            try:
+                deadline = time.monotonic() + 3
+                while time.monotonic() < deadline and host.status()["dspFrontpanel"] is None:
+                    time.sleep(0.05)
+                status = host.status()
+                self.assertIsNotNone(status["dspFrontpanel"], "Fake PING was not processed")
+                self.assertEqual(status["blocks"], 0)
+                self.assertIsNone(status["healthAgeSeconds"])
+            finally:
+                host.stop()
+                host.process.stdin.close()
+                host.process.stderr.close()
+
 
 FAKE_HOST = """#!/usr/bin/env python3
 import sys
@@ -55,6 +118,7 @@ for line in sys.stdin:
     line=line.strip()
     if line=="PING":
         print("[OSTIRUS_HEALTH] blocks=25 peak=0.1234 pair=1 errors=0", file=sys.stderr, flush=True)
+        print("[OSTIRUS_FRONT] revision=23 lfo1=0.2 lfo2=0.4 lfo3=0.8 bpm=0.3 logo=0.9 activity=3", file=sys.stderr, flush=True)
     elif line=="STOP":
         break
 """
@@ -106,6 +170,42 @@ class LocalHTTPTests(unittest.TestCase):
         self.assertEqual(state["peak"], 0.1234)
         self.assertEqual(state["stereoPair"], 2)
         self.assertNotIn("private-test-firmware.bin", json.dumps(state))
+
+    def test_dsp_frontpanel_feedback_is_real_or_absent(self):
+        deadline = time.monotonic() + 3
+        state = {}
+        while time.monotonic() < deadline:
+            state = json.load(self.request("/api/status"))
+            if state["dspFrontpanel"] is not None:
+                break
+            time.sleep(0.1)
+        front = state["dspFrontpanel"]
+        self.assertIsNotNone(front)
+        self.assertEqual(front["source"], "dsp-frontpanel")
+        self.assertEqual(front["revision"], 23)
+        self.assertEqual(front["lfoLedLevels"], [0.2, 0.4, 0.8])
+        self.assertEqual(front["midiActivityMask"], 3)
+        self.assertLess(front["ageSeconds"], 3)
+        self.assertNotIn("patch", json.dumps(front).lower())
+        self.assertNotIn("sysex", json.dumps(front).lower())
+        # A feedback packet older than three seconds is not presented as live.
+        with self.backend._state_lock:
+            self.backend.last_frontpanel = time.monotonic() - 10
+        self.assertIsNone(self.backend.status()["dspFrontpanel"])
+
+    def test_duplicate_dsp_revision_cannot_refresh_stale_feedback(self):
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            if self.backend.status()["dspFrontpanel"] is not None:
+                break
+            time.sleep(0.05)
+        self.assertIsNotNone(self.backend.status()["dspFrontpanel"])
+        with self.backend._state_lock:
+            self.backend.last_frontpanel = time.monotonic() - 10
+        # Fake native process continues responding to PING, but always with
+        # the same DSP revision. These repetitions must not revive old LEDs.
+        time.sleep(1.25)
+        self.assertIsNone(self.backend.status()["dspFrontpanel"])
 
     def test_valid_midi_sent(self):
         data = json.load(self.request("/api/midi", method="POST", data={"type": "note_on", "note": 60, "velocity": 94}))
