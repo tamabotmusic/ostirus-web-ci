@@ -29,6 +29,7 @@ jobs:
           python -m compileall -q hybrid
           for file in hybrid/ui/*.js; do node --check "$file"; done
           node --test hybrid/tests/test_dsp_lfo_ui.cjs
+          node --test hybrid/tests/test_lfo_select_v15.cjs
       - name: Obtener fuentes GPL verificadas
         run: python scripts/fetch_ucor_source.py --destination source-snapshot.tar.xz
       - name: Descomprimir fuentes
