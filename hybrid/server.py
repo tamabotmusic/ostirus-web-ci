@@ -115,7 +115,7 @@ class NativeHost:
                     activity = int(front.group(7))
                     if (revision > 0 and all(math.isfinite(v) for v in levels + [bpm, logo])
                             and 0 <= activity <= 65535
-                            and (self.frontpanel is None or revision >= self.frontpanel["revision"])):
+                            and (self.frontpanel is None or revision > self.frontpanel["revision"])):
                         self.frontpanel = {
                             "source": "dsp-frontpanel",
                             "revision": revision,
