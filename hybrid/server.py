@@ -232,6 +232,7 @@ class LocalHandler(BaseHTTPRequestHandler):
             "/ti2-controls-v09.js": ("ti2-controls-v09.js", "text/javascript; charset=utf-8"),
             "/ti2-controls-v10.js": ("ti2-controls-v10.js", "text/javascript; charset=utf-8"),
             "/ti2-dsp-lfo-v13.js": ("ti2-dsp-lfo-v13.js", "text/javascript; charset=utf-8"),
+            "/ti2-dsp-logo-v14.js": ("ti2-dsp-logo-v14.js", "text/javascript; charset=utf-8"),
         }
         entry = files.get(path)
         if not entry:
