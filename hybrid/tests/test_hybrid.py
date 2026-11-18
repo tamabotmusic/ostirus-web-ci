@@ -130,6 +130,20 @@ class LocalHTTPTests(unittest.TestCase):
             self.backend.last_frontpanel = time.monotonic() - 10
         self.assertIsNone(self.backend.status()["dspFrontpanel"])
 
+    def test_duplicate_dsp_revision_cannot_refresh_stale_feedback(self):
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            if self.backend.status()["dspFrontpanel"] is not None:
+                break
+            time.sleep(0.05)
+        self.assertIsNotNone(self.backend.status()["dspFrontpanel"])
+        with self.backend._state_lock:
+            self.backend.last_frontpanel = time.monotonic() - 10
+        # Fake native process continues responding to PING, but always with
+        # the same DSP revision. These repetitions must not revive old LEDs.
+        time.sleep(1.25)
+        self.assertIsNone(self.backend.status()["dspFrontpanel"])
+
     def test_valid_midi_sent(self):
         data = json.load(self.request("/api/midi", method="POST", data={"type": "note_on", "note": 60, "velocity": 94}))
         self.assertTrue(data["sent"])
