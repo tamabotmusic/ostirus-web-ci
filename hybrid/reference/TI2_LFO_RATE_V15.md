@@ -38,3 +38,7 @@ Para diagnosticarlo, comprobar el mismo programa en v0.13 y v0.15 y mirar si `lf
 5. Confirmar que OSC, FILTER, VALUE, SHIFT, audio y LED DSP LFO 1–3 se comportan como en v0.13.
 
 **Límite explícito:** no se ha implementado la lectura del estado interno, los destinos, las páginas LCD ni RATE de LFO 3. Esta versión no es todavía equivalente por completo al Virus TI2 Desktop.
+
+## Distribución para la prueba
+
+El paquete macOS se compila desde esta rama con el mismo host nativo y las dependencias locales del frontal. Se distribuye **sin firmware** y debe extraerse en una carpeta separada. La compilación no demuestra todavía equivalencia sonora; requiere validación auditiva en el Mac del usuario.
