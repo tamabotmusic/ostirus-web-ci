@@ -23,12 +23,12 @@ ROOT = Path(__file__).resolve().parent
 UI_DIR = ROOT / "ui"
 MAX_POST_BYTES = 512
 MIDI_RANGE = range(128)
+FLOAT_RE = r"([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)"
 HEALTH_RE = re.compile(
-    r"^\[OSTIRUS_HEALTH\] blocks=(\d+) peak=([+-]?\d+(?:\.\d+)?) pair=(\d+) errors=(\d+)$"
+    r"^\[OSTIRUS_HEALTH\] blocks=(\d+) peak=" + FLOAT_RE + r" pair=(\d+) errors=(\d+)$"
 )
 # Only the scalar indicators emitted by Gearmulator's DSP FrontpanelState.
 # Not patch values, mode, program name, selection focus, or raw SysEx.
-FLOAT_RE = r"([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)"
 FRONT_RE = re.compile(
     r"^\[OSTIRUS_FRONT\] revision=(\d+) lfo1=" + FLOAT_RE +
     r" lfo2=" + FLOAT_RE + r" lfo3=" + FLOAT_RE +
@@ -103,11 +103,13 @@ class NativeHost:
                 if line.startswith("[OSTIRUS_READY]"):
                     self.ready = True
                 elif health:
-                    self.blocks = int(health.group(1))
-                    self.peak = float(health.group(2))
-                    self.pair = int(health.group(3))
-                    self.errors = int(health.group(4))
-                    self.last_health = time.monotonic()
+                    peak = float(health.group(2))
+                    if math.isfinite(peak) and peak >= 0:
+                        self.blocks = int(health.group(1))
+                        self.peak = peak
+                        self.pair = int(health.group(3))
+                        self.errors = int(health.group(4))
+                        self.last_health = time.monotonic()
                 elif front:
                     revision = int(front.group(1))
                     levels = [float(front.group(i)) for i in (2, 3, 4)]
