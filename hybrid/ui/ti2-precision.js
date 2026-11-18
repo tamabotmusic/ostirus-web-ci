@@ -373,7 +373,8 @@
 
 
 
-  txt(svg,1057,379,'✧','mixer-emblem',{'text-anchor':'middle'});
+  txt(svg,1057,379,'✧','mixer-emblem',{'text-anchor':'middle',
+    'data-ti2-dsp-logo':'true','data-state':'unavailable'});
   txt(svg,403,625,'TRANSPOSE','panel-micro',{'text-anchor':'middle'});
   txt(svg,403,637,'POWER ON/OFF','panel-secondary',{'text-anchor':'middle'});
   txt(svg,634,634,'CATEGORY','panel-micro',{'text-anchor':'middle'});
