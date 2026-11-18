@@ -147,7 +147,7 @@ class NativeHost:
         return self._send(midi_line(payload))
 
     def _ping_loop(self):
-        while not self._stopped.wait(1.0):
+        while not self._stopped.wait(0.1):
             if not self._send("PING"):
                 return
 
@@ -231,6 +231,7 @@ class LocalHandler(BaseHTTPRequestHandler):
             "/ti2-controls-v08.js": ("ti2-controls-v08.js", "text/javascript; charset=utf-8"),
             "/ti2-controls-v09.js": ("ti2-controls-v09.js", "text/javascript; charset=utf-8"),
             "/ti2-controls-v10.js": ("ti2-controls-v10.js", "text/javascript; charset=utf-8"),
+            "/ti2-dsp-lfo-v13.js": ("ti2-dsp-lfo-v13.js", "text/javascript; charset=utf-8"),
         }
         entry = files.get(path)
         if not entry:

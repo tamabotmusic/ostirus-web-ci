@@ -162,17 +162,27 @@ function displayStatus(state) {
   }
 }
 
+let statusRequestInFlight = false;
 async function updateStatus() {
+  if (statusRequestInFlight) return;
+  statusRequestInFlight = true;
   try {
     const result = await fetch("/api/status", { cache: "no-store" });
     if (!result.ok) throw new Error("Server unavailable");
-    displayStatus(await result.json());
+    const state = await result.json();
+    displayStatus(state);
+    window.dispatchEvent(new CustomEvent("ti2-dsp-frontpanel", {
+      detail: state.dspFrontpanel ?? null,
+    }));
   } catch (_err) {
+    window.dispatchEvent(new CustomEvent("ti2-dsp-frontpanel", {detail: null}));
     if (lastStatus !== null) {
       el("connection").className = "status-pill bad";
       el("connection").textContent = "Servidor desconectado";
       el("diagnosisTitle").textContent = "Sin conexión con el servidor local";
     }
+  } finally {
+    statusRequestInFlight = false;
   }
 }
 
@@ -240,4 +250,4 @@ setupComputerKeyboard();
 el("panic").addEventListener("click", releaseAll);
 el("external").addEventListener("click", connectMidi);
 updateStatus();
-setInterval(updateStatus, 950);
+setInterval(updateStatus, 125);

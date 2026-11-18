@@ -301,15 +301,18 @@
   // Matrix / LFO / filter and effects status indicators, all physical-position references.
   // The real TI2 OSC selector LEDs sit inside a recessed, rounded strip.
   create('rect',{x:605,y:223,width:174,height:27,rx:2,fill:'#11191c',stroke:'#8ca1a4','stroke-width':.8,opacity:'.8'},svg);
-  // All LEDs are neutral: firmware state is not exposed to the web UI.
+  // Other LEDs stay neutral until their actual firmware state can be read.
   const indicator=(x,y,caption,on=false,anchor='start',lowerEffect=false)=>{
-    create('circle',{cx:x,cy:y,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
+    const led=create('circle',{cx:x,cy:y,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
       'data-state':'unavailable',...(lowerEffect?{'data-ti2-effects-lower-led':caption}:{})},svg);
     txt(svg,x+(anchor==='start'?7:-7),y+2.7,caption,'indicator-caption',
       {'text-anchor':anchor,...(lowerEffect?{'data-ti2-effects-lower-label':caption}:{})});
+    return led;
   };
   ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'].forEach((s,i)=>indicator(226,231+i*18,s));
-  [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x])=>indicator(x,125,s));
+  [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x],i)=>{
+    indicator(x,125,s).setAttribute('data-ti2-dsp-lfo',String(i+1));
+  });
   ['OSC 1','OSC 2','OSC 3'].forEach((s,i)=>{
     indicator(618+i*49,236,s);
     // Tag only the selection LED, not other occurrences of OSC 1/2/3.
@@ -424,5 +427,5 @@
   setPatch();
   // Important: knob controls are still output-only. They do not imply reading firmware parameter state.
   const editElement=document.getElementById('ti2-precision-edit');
-  if(editElement)editElement.textContent='PANEL v0.7 REFERENCE · 32 KNOBS · 43 VISIBLE KEY CAPS · LED STATES NOT SYNCHRONIZED';
+  if(editElement)editElement.textContent='PANEL v0.7 REFERENCE · 32 KNOBS · 43 VISIBLE KEY CAPS · LFO 1–3 DSP EXPERIMENTAL · DEMÁS LED SIN LECTURA';
 })();
