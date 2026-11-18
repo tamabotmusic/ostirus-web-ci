@@ -110,6 +110,35 @@ for line in sys.stdin:
                 host.process.stdin.close()
                 host.process.stderr.close()
 
+    def test_native_frontpanel_polling_is_frequent_enough_for_lfo_motion(self):
+        """Several DSP phase updates must arrive within one second."""
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            engine = base / "fake-moving-lfo-engine"
+            engine.write_text('''#!/usr/bin/env python3
+import sys
+revision = 0
+print("[OSTIRUS_READY] audio=CoreAudio rate=44100", file=sys.stderr, flush=True)
+for line in sys.stdin:
+    if line.strip() == "PING":
+        revision += 1
+        print(f"[OSTIRUS_HEALTH] blocks={revision} peak=0 pair=0 errors=0", file=sys.stderr, flush=True)
+        print(f"[OSTIRUS_FRONT] revision={revision} lfo1=0.2 lfo2=0.4 lfo3=0.8 bpm=0 logo=0 activity=0", file=sys.stderr, flush=True)
+    elif line.strip() == "STOP":
+        break
+''', encoding="utf-8")
+            engine.chmod(engine.stat().st_mode | stat.S_IXUSR)
+            firmware = base / "fake-firmware.bin"
+            firmware.write_bytes(b"test only")
+            host = server_module.NativeHost(str(engine), str(firmware))
+            try:
+                time.sleep(0.65)
+                self.assertGreaterEqual(host.status()["blocks"], 3)
+            finally:
+                host.stop()
+                host.process.stdin.close()
+                host.process.stderr.close()
+
 
 FAKE_HOST = """#!/usr/bin/env python3
 import sys
@@ -229,8 +258,14 @@ class LocalHTTPTests(unittest.TestCase):
 
     def test_only_ui_assets_served(self):
         with self.request("/") as response:
-            self.assertIn("OsTIrus", response.read().decode("utf-8"))
+            html = response.read().decode("utf-8")
+            self.assertIn("OsTIrus", html)
+            self.assertIn("PANEL v0.13", html)
             self.assertIn("nosniff", response.headers["X-Content-Type-Options"])
+        with self.request("/ti2-dsp-lfo-v13.js") as response:
+            self.assertEqual(response.status, 200)
+            self.assertIn("javascript", response.headers["Content-Type"])
+            self.assertGreater(len(response.read()), 100)
 
 
 if __name__ == "__main__":

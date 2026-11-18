@@ -32,7 +32,9 @@ jobs:
       - name: Pruebas locales del puente MIDI y privacidad
         run: python -m unittest discover -s hybrid/tests -v
       - name: Validación JavaScript del panel
-        run: node --check hybrid/ui/app.js
+        run: |
+          for file in hybrid/ui/*.js; do node --check "$file"; done
+          node --test hybrid/tests/test_dsp_lfo_ui.cjs
       - name: Sintaxis Python
         run: python -m compileall -q scripts tests hybrid
       - name: Sintaxis shell

@@ -27,7 +27,8 @@ jobs:
       - name: Comprobar sintaxis JavaScript y Python
         run: |
           python -m compileall -q hybrid
-          node --check hybrid/ui/app.js
+          for file in hybrid/ui/*.js; do node --check "$file"; done
+          node --test hybrid/tests/test_dsp_lfo_ui.cjs
       - name: Obtener fuentes GPL verificadas
         run: python scripts/fetch_ucor_source.py --destination source-snapshot.tar.xz
       - name: Descomprimir fuentes
