@@ -18,7 +18,7 @@
 .ti2-photo-svg .ti2-knob.control-live {cursor:ns-resize;outline:0;touch-action:none;}
 .ti2-photo-svg .ti2-knob.control-live:focus-visible circle:nth-of-type(2) {stroke:#70d7ec;stroke-width:3.5;}
 .ti2-photo-svg .ti2-knob.control-pending {cursor:default;}
-.ti2-photo-svg .mixer-emblem {font-size:45px;font-weight:900;fill:#7a9b9e;opacity:.72;}
+.ti2-photo-svg .mixer-emblem {font-size:45px;font-weight:900;fill:var(--ti2-dsp-logo-fill,#7a9b9e);opacity:var(--ti2-dsp-logo-opacity,.72);}
 .ti2-photo-svg .lcd-line {font-family:'Courier New',monospace;font-size:10px;fill:#183f4c;font-weight:700;}
 .ti2-photo-svg .lcd-title {font-family:'Courier New',monospace;font-size:21px;fill:#164057;font-weight:800;}
 .ti2-photo-svg .lcd-logo {font-family:Arial,Helvetica,sans-serif;font-size:16px;fill:#c1d7d9;font-weight:900;}
