@@ -35,6 +35,8 @@ jobs:
         run: |
           for file in hybrid/ui/*.js; do node --check "$file"; done
           node --test hybrid/tests/test_dsp_lfo_ui.cjs
+          node --test hybrid/tests/test_lfo_select_v15.cjs
+          node --test hybrid/tests/test_lfo_integration_v15.cjs
       - name: Sintaxis Python
         run: python -m compileall -q scripts tests hybrid
       - name: Sintaxis shell
