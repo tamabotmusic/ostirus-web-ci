@@ -16,7 +16,7 @@ El host ya admite `PING` desde `server.py`. En v0.12 añade una línea opcional 
 [OSTIRUS_FRONT] revision=23 lfo1=0.2 lfo2=0.4 lfo3=0.8 bpm=0.3 logo=0.9 activity=3
 ```
 
-El servidor valida una expresión regular de formato cerrado, rechaza valores no finitos, impide revisiones antiguas y devuelve únicamente en `GET /api/status`:
+El servidor valida una expresión regular de formato cerrado, rechaza valores no finitos y acepta exclusivamente revisiones **nuevas**. Una respuesta `PING` repetida con la misma revisión no renueva la frescura de los indicadores. Devuelve únicamente en `GET /api/status`:
 
 ```json
 {
