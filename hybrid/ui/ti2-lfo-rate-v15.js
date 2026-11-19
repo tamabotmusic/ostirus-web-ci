@@ -29,7 +29,13 @@
     },
   });
 
+  const indicators = [...svg.querySelectorAll('[data-ti2-lfo-selector]')];
+
   function updateFocus() {
+    for (const indicator of indicators) {
+      indicator.setAttribute('data-selected',
+        String(indicator.getAttribute('data-ti2-lfo-selector') === String(focus)));
+    }
     for (const [index, button] of buttons.entries()) {
       button.setAttribute('aria-pressed', String(focus === index + 1));
       button.setAttribute('aria-label', 'Seleccionar LFO ' + (index + 1) +
@@ -69,6 +75,12 @@
     });
     return button;
   });
+
+  for (const indicator of indicators) {
+    const index = Number(indicator.getAttribute('data-ti2-lfo-selector'));
+    indicator.addEventListener('click', () => choose(index));
+    indicator.classList.add('control-live');
+  }
 
   updateFocus();
   window.OsTIrusLFOFocus = Object.freeze({ current: () => focus });

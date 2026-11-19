@@ -299,16 +299,18 @@
   // The real TI2 OSC selector LEDs sit inside a recessed, rounded strip.
   create('rect',{x:605,y:223,width:174,height:27,rx:2,fill:'#11191c',stroke:'#8ca1a4','stroke-width':.8,opacity:'.8'},svg);
   // Other LEDs stay neutral until their actual firmware state can be read.
-  const indicator=(x,y,caption,on=false,anchor='start',lowerEffect=false)=>{
+  const indicator=(x,y,caption,on=false,anchor='start',lowerEffect=false,parent=svg)=>{
     const led=create('circle',{cx:x,cy:y,r:3.4,fill:'#242e31',stroke:'#829193','stroke-width':.8,
-      'data-state':'unavailable',...(lowerEffect?{'data-ti2-effects-lower-led':caption}:{})},svg);
-    txt(svg,x+(anchor==='start'?7:-7),y+2.7,caption,'indicator-caption',
+      'data-state':'unavailable',...(lowerEffect?{'data-ti2-effects-lower-led':caption}:{})},parent);
+    txt(parent,x+(anchor==='start'?7:-7),y+2.7,caption,'indicator-caption',
       {'text-anchor':anchor,...(lowerEffect?{'data-ti2-effects-lower-label':caption}:{})});
     return led;
   };
   ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'].forEach((s,i)=>indicator(226,231+i*18,s));
   [['LFO 1',310],['LFO 2',352],['LFO 3',400]].forEach(([s,x],i)=>{
-    indicator(x,125,s).setAttribute('data-ti2-dsp-lfo',String(i+1));
+    const group=create('g',{'data-ti2-lfo-selector':i+1},svg);
+    create('rect',{x:x-5,y:118,width:38,height:14,fill:'transparent'},group);
+    indicator(x,125,s,false,'start',false,group).setAttribute('data-ti2-dsp-lfo',String(i+1));
   });
   ['OSC 1','OSC 2','OSC 3'].forEach((s,i)=>{
     indicator(618+i*49,236,s);

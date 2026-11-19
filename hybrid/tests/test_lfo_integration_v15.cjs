@@ -65,3 +65,18 @@ test('physical RATE wheel issues CC79 after LFO2 SELECT; LFO3 RATE never edits L
  assert.equal(messages.length,1);
  assert.equal(window.OsTIrusTI2Context.getSelection().lfo,3);
 });
+
+test('clicking a top LFO indicator selects the matching RATE context and highlights its SELECT button',()=>{
+ const {svg,button,rate}=fixture();
+ const first=svg.querySelector('[data-ti2-lfo-selector="1"]');
+ const second=svg.querySelector('[data-ti2-lfo-selector="2"]');
+ second.fire('click');
+ assert.equal(button(2).getAttribute('aria-pressed'),'true');
+ assert.equal(second.getAttribute('data-selected'),'true');
+ assert.equal(rate.getAttribute('data-cc'),'79');
+ assert.equal(second.querySelector('circle').getAttribute('fill'),'#242e31');
+ button(1).fire('click');
+ assert.equal(first.getAttribute('data-selected'),'true');
+ assert.equal(second.getAttribute('data-selected'),'false');
+ assert.equal(rate.getAttribute('data-cc'),'67');
+});

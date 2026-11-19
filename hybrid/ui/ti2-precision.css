@@ -45,3 +45,8 @@
 
 /* v0.10: only the manually armed physical SHIFT key is highlighted. */
 .ti2-photo-svg .ti2-button-group.control-active rect:nth-of-type(2){stroke:#f0a6b7;stroke-width:1.5;filter:drop-shadow(0 0 2px #d35475);}
+
+.ti2-photo-svg [data-ti2-lfo-selector].control-live {cursor:pointer;}
+.ti2-photo-svg [data-ti2-lfo-selector][data-selected="true"] circle {stroke:#8fdae8;stroke-width:1.5;}
+.ti2-photo-svg [data-ti2-lfo-selector][data-selected="true"] text {fill:#b5effa;}
+.ti2-photo-svg [data-action^="lfo-focus-"][aria-pressed="true"] rect:first-child {stroke:#8fdae8;stroke-width:2;}

@@ -7,6 +7,7 @@
   const leds = [1, 2, 3].map(i => document.querySelector('[data-ti2-dsp-lfo="' + i + '"]'));
   if (leds.some(led => !led)) return;
 
+  const status = document.getElementById('ti2-lfo-feedback');
   const dark = [0x24, 0x2e, 0x31];
   const lit = [0xec, 0x45, 0x66];
   const neutral = () => leds.forEach(led => {
@@ -30,8 +31,10 @@
         feedback.lfoLedLevels.length !== 3 ||
         !feedback.lfoLedLevels.every(Number.isFinite)) {
       neutral();
+      if (status) status.textContent = 'LED LFO · sin datos recientes del motor';
       return;
     }
+    if (status) status.textContent = 'LED LFO · recibiendo fases del motor';
     leds.forEach((led, i) => {
       led.setAttribute('fill', color(feedback.lfoLedLevels[i]));
       led.setAttribute('data-state', 'dsp');
