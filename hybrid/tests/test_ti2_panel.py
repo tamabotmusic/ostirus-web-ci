@@ -40,8 +40,8 @@ class TI2VectorPanelTests(unittest.TestCase):
         self.assertRegex(JS,r"\['VOLUME',79,155,31,null\]")
         self.assertIn("control-pending",JS)
         self.assertIn("do not imply reading firmware parameter state",JS)
-        self.assertIn("fetch('/api/midi'",JS)
-        self.assertIn("if(!response.ok)",JS)
+        self.assertIn("window.OsTIrusSendMidi(",JS)
+        self.assertIn("if (!response.ok)", (BASE / "ui/app.js").read_text(encoding="utf-8"))
     def test_user_red_marked_overlap_regressions(self):
         # Access TI2 Quickstart (2009) and owner photograph: labels must clear caps and contours.
         self.assertNotIn("M163 111 Q169", JS, "duplicate ARP outline must stay removed")

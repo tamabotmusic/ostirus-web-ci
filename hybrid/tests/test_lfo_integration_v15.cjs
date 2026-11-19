@@ -27,10 +27,10 @@ function fixture(){
  const panel=new Element(), program=new Element('select'), caption=new Element();
  const ids={'ti2-precision':panel,program,'ti2-precision-edit':caption};
  const document={getElementById:id=>ids[id]??new Element(),createElementNS:(_ns,tag)=>new Element(tag),querySelector:selector=>selector==='#ti2-precision .ti2-photo-svg'?panel.querySelector('.ti2-photo-svg'):null};
- const window={addEventListener(){}, dispatchEvent(){}};
  const messages=[];const frame=[];
+ const window={addEventListener(){}, dispatchEvent(){},
+  OsTIrusSendMidi:message=>{messages.push(message);return Promise.resolve();}};
  const ctx=vm.createContext({document,window,Map,Set,Promise,console,
-  fetch:(url,init)=>{if(url==='/api/midi')messages.push(JSON.parse(init.body));return Promise.resolve({ok:true});},
   requestAnimationFrame:fn=>frame.push(fn)});
  for(const file of ['ti2-precision.js','ti2-controls-v09.js','ti2-lfo-rate-v15.js'])
   vm.runInContext(fs.readFileSync(path.join(ui,file),'utf8'),ctx,{filename:file});

@@ -252,10 +252,7 @@
           // coalesce successive moves of the same physical CC mapping.
           const sends=[];
           toSend.forEach(batch=>batch.controllers.forEach(controller=>{
-            sends.push(fetch('/api/midi',{method:'POST',headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({type:'cc',controller,value:batch.value})}).then(response=>{
-                if(!response.ok)throw new Error('Host unavailable');
-              }));
+            sends.push(window.OsTIrusSendMidi({type:'cc',controller,value:batch.value}));
           }));
           Promise.all(sends).catch(()=>{if(editElement)editElement.textContent='MIDI ERROR · HOST NO DISPONIBLE';});
         });}

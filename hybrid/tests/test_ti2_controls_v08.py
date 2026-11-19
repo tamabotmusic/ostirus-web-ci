@@ -27,7 +27,7 @@ class ProgramControlTests(unittest.TestCase):
         self.assertLess(HTML.index('src="./ti2-precision.js"'), HTML.index('src="./ti2-controls-v08.js"'))
         self.assertIn('"/ti2-controls-v08.js":', SERVER)
         self.assertIn("window.OsTIrusProgram", APP)
-        self.assertIn("programSendQueue", APP)
+        self.assertIn("midiSendQueue", APP)
         self.assertIn('select.addEventListener("change", () => {', APP)
         self.assertIn('select.dispatchEvent(new Event("input"', APP)
 

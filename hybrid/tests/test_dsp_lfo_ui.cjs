@@ -25,6 +25,7 @@ class Element {
   removeAttribute(key) { delete this.attributes[key]; }
   appendChild(child) { this.children.push(child); return child; }
   addEventListener(name, callback) { (this.listeners[name] ||= []).push(callback); }
+  dispatchEvent(event) { (this.listeners[event.type] || []).forEach(callback => callback(event)); }
   querySelectorAll(selector) {
     const match = selector.match(/^(circle)?\[([\w-]+)(?:="([^"]+)")?\]$/);
     if (!match) throw Error(`Unsupported fixture selector: ${selector}`);
@@ -49,6 +50,7 @@ function loadPanel({withRenderer = true, withApp = false} = {}) {
   const ids = {"ti2-precision": panel, program, "ti2-precision-edit": caption};
   const listeners = {};
   const pendingStatus = [];
+  const pendingMidi = [];
   const intervals = [];
   const document = {
     getElementById: (id) => ids[id] ||= new Element(),
@@ -63,7 +65,11 @@ function loadPanel({withRenderer = true, withApp = false} = {}) {
   };
   const context = vm.createContext({
     window, document, console, Map, Set,
-    fetch: url => new Promise((resolve, reject) => pendingStatus.push({url, resolve, reject})),
+    fetch: (url, init) => new Promise((resolve, reject) => {
+      if (url === "/api/midi") pendingMidi.push({message: JSON.parse(init.body), resolve, reject});
+      else pendingStatus.push({url, resolve, reject});
+    }),
+    Event: class { constructor(type) { this.type = type; } },
     setInterval: (fn, delay) => intervals.push({fn, delay}),
     CustomEvent: class { constructor(type, init) { this.type = type; this.detail = init.detail; } },
   });
@@ -80,6 +86,8 @@ function loadPanel({withRenderer = true, withApp = false} = {}) {
     find: (i) => panel.querySelector(`[data-ti2-dsp-lfo="${i}"]`),
     emit: (detail) => (listeners["ti2-dsp-frontpanel"] || []).forEach(callback => callback({detail})),
     pendingStatus,
+    pendingMidi,
+    run: code => vm.runInContext(code, context),
     intervals,
     poll: () => vm.runInContext("updateStatus()", context),
   };
@@ -170,4 +178,49 @@ test("a failed status fetch clears previously lit LFOs", async () => {
   await fetching;
   assert.equal(find(1).getAttribute("fill"), "#242e31");
   assert.equal(find(1).getAttribute("data-state"), "unavailable");
+});
+
+test("program, panel CC and note commands share one ordered queue after a rejected command", async () => {
+  const {pendingMidi, run} = loadPanel({withApp: true});
+  const tick = () => new Promise(resolve => setImmediate(resolve));
+  run(`
+    window.OsTIrusProgram.select(12);
+    window.OsTIrusSendMidi({type: "cc", controller: 79, value: 72}).catch(() => {});
+    noteOn(60);
+    noteOff(60);
+  `);
+  await tick();
+  const expected = [
+    {type: "program", program: 12},
+    {type: "cc", controller: 79, value: 72},
+    {type: "note_on", note: 60, velocity: 100},
+    {type: "note_off", note: 60},
+  ];
+  for (const [index, message] of expected.entries()) {
+    assert.equal(pendingMidi.length, 1);
+    const request = pendingMidi.shift();
+    assert.deepEqual(request.message, message);
+    request.resolve({ok: index !== 1});
+    await tick();
+  }
+  assert.equal(pendingMidi.length, 0);
+});
+
+test("an external CC response from before a program change cannot refill the panel cache", async () => {
+  const {pendingMidi, run} = loadPanel({withApp: true});
+  const tick = () => new Promise(resolve => setImmediate(resolve));
+  run(`
+    onMidiMessage({data: [0xb0, 79, 72]});
+    window.OsTIrusProgram.select(12);
+  `);
+  await tick();
+  pendingMidi.shift().resolve({ok: true});
+  await tick();
+  assert.equal(run("window.OsTIrusTI2Knobs.localValue(79)"), undefined);
+  pendingMidi.shift().resolve({ok: true});
+  run("onMidiMessage({data: [0xb0, 79, 73]})");
+  await tick();
+  pendingMidi.shift().resolve({ok: true});
+  await tick();
+  assert.equal(run("window.OsTIrusTI2Knobs.localValue(79)"), 73);
 });

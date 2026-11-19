@@ -8,7 +8,16 @@ const whiteSemitones = new Set([0, 2, 4, 5, 7, 9, 11]);
 const typingKeys = "awsedftgyhuj";
 let lastStatus = null;
 
-async function sendMidi(message) {
+// The local HTTP server handles requests concurrently. Keep all input sources
+// in one queue so the engine sees MIDI messages in the order we submit them.
+let midiSendQueue = Promise.resolve();
+function sendMidi(message) {
+  const sent = midiSendQueue.then(() => postMidi(message));
+  midiSendQueue = sent.catch(() => {});
+  return sent;
+}
+
+async function postMidi(message) {
   const response = await fetch("/api/midi", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -16,8 +25,8 @@ async function sendMidi(message) {
     cache: "no-store",
   });
   if (!response.ok) throw new Error("El motor no ha aceptado el mensaje MIDI");
-  return response.json();
 }
+window.OsTIrusSendMidi = sendMidi;
 
 function showMidiError(message) {
   el("midiInfo").textContent = message;
@@ -76,18 +85,18 @@ function buildKeys() {
 // The native host accepts 0..127 Program Change on its current MIDI part.
  // Centralize selection so the dropdown, physical VALUE controls and incoming
  // MIDI share one source of truth; no bank or firmware patch-state read is implied.
-let programSendQueue = Promise.resolve();
+let programSelectionRevision = 0;
 function selectProgram(program, transmit = true) {
   if (!Number.isInteger(program) || program < 0 || program > 127) return false;
   const select = el("program");
   select.value = String(program);
+  programSelectionRevision++;
   // 'input' notifies the physical LCD and VALUE 3 knob without triggering
   // another Program Change through the dropdown's 'change' listener.
   select.dispatchEvent(new Event("input", { bubbles: true }));
   if (transmit) {
-    programSendQueue = programSendQueue.catch(() => {}).then(
-      () => sendMidi({ type: "program", program })
-    ).catch(() => showMidiError("No se pudo cambiar el programa"));
+    sendMidi({ type: "program", program })
+      .catch(() => showMidiError("No se pudo cambiar el programa"));
   }
   return true;
 }
@@ -196,12 +205,17 @@ function onMidiMessage(event) {
     case 0x80:
       noteOff(data1);
       break;
-    case 0xb0:
+    case 0xb0: {
+      const revision = programSelectionRevision;
       sendMidi({ type: "cc", controller: data1, value: data2 })
-        .then(() => window.dispatchEvent(new CustomEvent("ti2-local-midi-cc", {
-          detail: { controller: data1, value: data2 },
-        }))).catch(() => showMidiError("No se pudo reenviar el CC MIDI"));
+        .then(() => {
+          if (revision !== programSelectionRevision) return;
+          window.dispatchEvent(new CustomEvent("ti2-local-midi-cc", {
+            detail: { controller: data1, value: data2 },
+          }));
+        }).catch(() => showMidiError("No se pudo reenviar el CC MIDI"));
       break;
+    }
     case 0xc0:
       selectProgram(data1);
       break;
