@@ -60,36 +60,31 @@ int main(int argc, char** argv) {
                 << ' ' << +after.lfoRates[2] << '\n';
       throw std::runtime_error("LFO RATE edit/readback mismatch");
     }
-    auto setParameter = [&](uint8_t page, uint8_t index, uint8_t value) {
-      synthLib::SMidiEvent event(synthLib::MidiEventSource::Host, 0, 0, 0);
-      event.sysex = {0xf0, 0, 0x20, 0x33, 1, 0x10, page, 0, index, value, 0xf7};
-      state.pendingMidi.emplace_back(std::move(event));
-    };
-    auto readOscillatorParameters = [&]() {
-      midiCommand(state, "READ_PRESET");
-      for (int i = 0; i < 32; ++i) {
-        render(1);
-        for (const auto& event : state.midiOut) {
-          const auto& bytes = event.sysex;
-          if (bytes.size() >= 267 && bytes[6] == 0x10 &&
-              bytes[7] == 0 && bytes[8] == 0x40)
-            return std::array<uint8_t, 3>{bytes[9 + 128 + 41],
-              bytes[9 + 28], bytes[9 + 94]};
-        }
-      }
-      throw std::runtime_error("no oscillator readback");
-    };
     for (const auto value : {0, 1}) {
-      setParameter(0x71, 41, value);
-      setParameter(0x70, 28, value);
-      setParameter(0x70, 94, value);
+      const auto suffix = " " + std::to_string(value);
+      if (!midiCommand(state, "OSC3_MODE" + suffix) ||
+          !midiCommand(state, "OSC_SYNC" + suffix) ||
+          !midiCommand(state, "KEY_MODE" + suffix))
+        throw std::runtime_error("oscillator command rejected");
       render(48);
-      const std::array<uint8_t, 3> expectedOsc{
-        static_cast<uint8_t>(value), static_cast<uint8_t>(value),
-        static_cast<uint8_t>(value)};
-      if (readOscillatorParameters() != expectedOsc)
+      const auto oscillator = dump();
+      if (oscillator.osc3 != value || oscillator.sync != value ||
+          oscillator.keyMode != value)
         throw std::runtime_error("OSC 3/SYNC/MONO edit/readback mismatch");
     }
+    midiCommand(state, "OSC3_MODE 5");
+    midiCommand(state, "KEY_MODE 4");
+    render(48);
+    dump();
+    midiCommand(state, "OSC3_MODE 0");
+    midiCommand(state, "KEY_MODE 0");
+    render(48);
+    const auto backup = dump();
+    if (backup.osc3Backup != 5 || backup.monoBackup != 4)
+      throw std::runtime_error("disabled oscillator or mono mode lost its backup");
+    if (midiCommand(state, "OSC3_MODE 68") || midiCommand(state, "OSC_SYNC 2") ||
+        midiCommand(state, "KEY_MODE 6"))
+      throw std::runtime_error("accepted out-of-range oscillator command");
     std::cout << "PASS: OSC 3, SYNC, and MONO protocol round-trip (off/on)\n";
     midiCommand(state, "NOTE 60 110");
     const auto rms = render(400);

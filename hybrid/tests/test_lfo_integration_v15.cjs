@@ -28,11 +28,20 @@ function fixture(){
  const ids={'ti2-precision':panel,program,'ti2-precision-edit':caption};
  const document={getElementById:id=>ids[id]??new Element(),createElementNS:(_ns,tag)=>new Element(tag),querySelector:selector=>selector==='#ti2-precision .ti2-photo-svg'?panel.querySelector('.ti2-photo-svg'):null};
  const messages=[];const frame=[];
- const window={addEventListener(){}, dispatchEvent(){},
+ const listeners = new Map();
+ const window={
+  addEventListener(name, handler) {
+   if (!listeners.has(name)) listeners.set(name, []);
+   listeners.get(name).push(handler);
+  },
+  dispatchEvent(event) {
+   for (const handler of listeners.get(event.type) ?? []) handler(event);
+  },
+  OsTIrusProgram: {step() {}},
   OsTIrusSendMidi:message=>{messages.push(message);return Promise.resolve();}};
  const ctx=vm.createContext({document,window,Map,Set,Promise,console,
   requestAnimationFrame:fn=>frame.push(fn)});
- for(const file of ['ti2-precision.js','ti2-controls-v09.js','ti2-lfo-rate-v15.js'])
+ for(const file of ['ti2-precision.js','ti2-controls-v09.js','ti2-controls-v10.js','ti2-lfo-rate-v15.js'])
   vm.runInContext(fs.readFileSync(path.join(ui,file),'utf8'),ctx,{filename:file});
  const svg=panel.querySelector('.ti2-photo-svg');
  const buttons=svg.querySelectorAll('.ti2-button-group');
@@ -82,4 +91,37 @@ test('clicking a top LFO indicator selects the matching RATE context and highlig
  assert.equal(first.getAttribute('data-selected'),'true');
  assert.equal(second.getAttribute('data-selected'),'false');
  assert.equal(rate.getAttribute('data-cc'),'67');
+});
+
+test('oscillator keys use confirmed state, preserve mode choices and skip disabled OSC 3', () => {
+ const {window, svg, messages} = fixture();
+ const key = name => svg.querySelector('[data-name="' + name + '"]');
+ const state = {osc3: 0, sync: 0, keyMode: 0, osc3Backup: 5, monoBackup: 3};
+ const readback = detail => window.dispatchEvent({type: 'ti2-oscillator-readback', detail});
+ const osc3 = key('OSC 3 ON');
+ osc3.fire('click');
+ assert.equal(messages.length, 0);
+ readback(state);
+ for (let i = 0; i < 3; i++) key('OSC SELECT').fire('click');
+ assert.equal(window.OsTIrusTI2Context.getSelection().oscillator, 1);
+ osc3.fire('click');
+ osc3.fire('click');
+ assert.equal(messages.length, 1);
+ assert.equal(messages[0].type, 'osc3_mode');
+ assert.equal(messages[0].value, 5);
+ assert.equal(osc3.getAttribute('aria-pressed'), 'false');
+ readback({...state, osc3: 5});
+ assert.equal(osc3.getAttribute('aria-pressed'), 'true');
+ key('SYNC').fire('click');
+ key('MONO').fire('click');
+ assert.equal(messages[1].type, 'osc_sync');
+ assert.equal(messages[1].value, 1);
+ assert.equal(messages[2].value, 3);
+ readback({...state, osc3: 5, sync: 1, keyMode: 3});
+ key('SHIFT').fire('click');
+ key('MONO').fire('click');
+ assert.equal(messages[3].type, 'key_mode');
+ assert.equal(messages[3].value, 4);
+ readback(null);
+ assert.equal(osc3.getAttribute('aria-disabled'), 'true');
 });

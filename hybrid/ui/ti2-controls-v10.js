@@ -24,7 +24,7 @@
     const active=held||armed;
     shift.classList.toggle('control-active',active);
     shift.setAttribute('aria-pressed',String(active));
-    shift.setAttribute('aria-label',active?'SHIFT activo; siguiente gesto PROGRAM':
+    shift.setAttribute('aria-label',active?'SHIFT activo; siguiente gesto compatible':
       'SHIFT; mantén pulsado para funciones secundarias o pulsa para el próximo gesto');
     shift.setAttribute('data-modifier',active?'active':'inactive');
     knob.setAttribute('data-shift-required','true');
@@ -106,6 +106,59 @@
     programs.step(keySteps[event.key]);
   },true);
   refresh();
+  const oscillatorKeys = [
+    {label:'OSC 3 ON', field:'osc3', type:'osc3_mode',
+      active:value=>value>0, next:state=>state.osc3 ? 0 : state.osc3Backup},
+    {label:'SYNC', field:'sync', type:'osc_sync',
+      active:value=>value===1, next:state=>1-state.sync},
+    {label:'MONO', field:'keyMode', type:'key_mode',
+      active:value=>value>=1 && value<=4,
+      next:(state,shifted)=>shifted ? (state.keyMode+1)%6 :
+        state.keyMode>=1 && state.keyMode<=4 ? 0 : state.monoBackup},
+  ];
+  let oscillatorState=null;
+  for(const key of oscillatorKeys){
+    const node=[...svg.querySelectorAll('.ti2-button-group')]
+      .find(button=>button.getAttribute('data-name')===key.label);
+    if(!node)continue;
+    let pending=null;
+    function render(){
+      const value=oscillatorState?.[key.field];
+      if(pending && (value===pending.value || Date.now()>=pending.until))pending=null;
+      const ready=Number.isInteger(value);
+      node.classList.toggle('control-live',ready);
+      node.classList.toggle('control-active',ready && key.active(value));
+      node.setAttribute('aria-disabled',String(!ready || Boolean(pending)));
+      node.setAttribute('aria-pressed',String(ready && key.active(value)));
+    }
+    function activate(event){
+      if(!oscillatorState || pending)return;
+      const value=key.next(oscillatorState,key.field==='keyMode' && consume(event));
+      const request={value,until:Date.now()+3000};
+      pending=request;
+      render();
+      window.OsTIrusSendMidi({type:key.type,value}).catch(()=>{
+        if(pending===request)pending=null;
+        render();
+        status('MIDI ERROR · HOST NO DISPONIBLE');
+      });
+    }
+    node.setAttribute('role','button');
+    node.setAttribute('tabindex','0');
+    node.setAttribute('aria-label',key.label);
+    node.addEventListener('click',activate);
+    node.addEventListener('keydown',event=>{
+      if(event.key!=='Enter' && event.key!==' ')return;
+      event.preventDefault();
+      if(!event.repeat)activate(event);
+    });
+    window.addEventListener('ti2-oscillator-readback',event=>{
+      oscillatorState=event.detail;
+      if(!oscillatorState)pending=null;
+      render();
+    });
+    render();
+  }
   window.OsTIrusModifier=Object.freeze({
     state:()=>({held,armed}),
     reset:()=>{held=false;armed=false;heldPointer=null;refresh();},

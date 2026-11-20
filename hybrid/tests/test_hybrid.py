@@ -35,6 +35,18 @@ class ValidationTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 server_module.midi_line({"type": "lfo3_rate", "value": value})
 
+    def test_oscillator_commands_accept_only_parameter_ranges(self):
+        for kind, command, maximum in (
+            ("osc3_mode", "OSC3_MODE", 67),
+            ("osc_sync", "OSC_SYNC", 1),
+            ("key_mode", "KEY_MODE", 5),
+        ):
+            self.assertEqual(server_module.midi_line({"type": kind, "value": maximum}),
+                             f"{command} {maximum}")
+            for invalid in (-1, maximum + 1, True, str(maximum)):
+                with self.subTest(kind=kind, value=invalid), self.assertRaises(ValueError):
+                    server_module.midi_line({"type": kind, "value": invalid})
+
     def test_panic(self):
         self.assertEqual(server_module.midi_line({"type": "panic"}), "CC 123 0")
 

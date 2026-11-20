@@ -33,6 +33,8 @@ constexpr size_t kFrames = 256;
 struct PresetReadback {
   std::array<char, 10> name{};
   std::array<uint8_t, 3> lfoRates{};
+  uint8_t osc3 = 0, sync = 0, keyMode = 0;
+  uint8_t osc3Backup = 1, monoBackup = 1;
 };
 
 struct State {
@@ -76,6 +78,17 @@ void capturePreset(State& state, const synthLib::SysexBuffer& bytes) {
     const auto rate = bytes[header.size() + rateOffsets[i]];
     if (rate > 127) return;
     preset.lfoRates[i] = rate;
+  }
+  preset.osc3 = bytes[header.size() + 128 + 41];
+  preset.sync = bytes[header.size() + 28];
+  preset.keyMode = bytes[header.size() + 94];
+  // Extended TI dumps place page 0x6e immediately after the first checksum.
+  constexpr size_t extendedOffset = checksumOffset + 1;
+  if (bytes.size() > extendedOffset + 128) {
+    const auto mono = bytes[extendedOffset + 122];
+    const auto osc3 = bytes[extendedOffset + 124];
+    if (mono >= 1 && mono <= 4) preset.monoBackup = mono;
+    if (osc3 >= 1 && osc3 <= 67) preset.osc3Backup = osc3;
   }
   for (size_t i = 0; i < preset.name.size(); ++i) {
     const auto ch = bytes[nameOffset + i];
@@ -158,6 +171,8 @@ bool midiCommand(State& state, const std::string& command) {
   int a = 0, b = 0;
   if (!(in >> action)) return false;
   uint8_t status = 0, data1 = 0, data2 = 0;
+  uint8_t page = 0, index = 0;
+  int maximum = 0;
   if (action == "NOTE" && in >> a >> b && a >= 0 && a <= 127 && b >= 1 && b <= 127) {
     status = 0x90; data1 = static_cast<uint8_t>(a); data2 = static_cast<uint8_t>(b);
   } else if (action == "OFF" && in >> a && a >= 0 && a <= 127) {
@@ -166,22 +181,38 @@ bool midiCommand(State& state, const std::string& command) {
     status = 0xC0; data1 = static_cast<uint8_t>(a);
   } else if (action == "CC" && in >> a >> b && a >= 0 && a <= 127 && b >= 0 && b <= 127) {
     status = 0xB0; data1 = static_cast<uint8_t>(a); data2 = static_cast<uint8_t>(b);
-  } else if (action != "READ_PRESET" &&
-             (action != "LFO3_RATE" || !(in >> a) || a < 0 || a > 127)) {
+  } else if (action == "LFO3_RATE") {
+    page = 0x71; index = 7; maximum = 127;
+  } else if (action == "OSC3_MODE") {
+    page = 0x71; index = 41; maximum = 67;
+  } else if (action == "OSC_SYNC") {
+    page = 0x70; index = 28; maximum = 1;
+  } else if (action == "KEY_MODE") {
+    page = 0x70; index = 94; maximum = 5;
+  } else if (action != "READ_PRESET") {
     return false;
   }
+  if (page && (!(in >> a) || a < 0 || a > maximum)) return false;
   synthLib::SMidiEvent event(synthLib::MidiEventSource::Host, status, data1, data2);
   if (action == "READ_PRESET") {
     event.sysex = {0xf0, 0, 0x20, 0x33, 1, 0x10, 0x30, 0, 0x40, 0xf7};
-  } else if (action == "LFO3_RATE") {
-    // Gearmulator parameterDescriptions_TI.json: page B (0x71), index 7.
-    // Address part 0 as the editor does in Single mode.
-    event.sysex = {0xf0, 0x00, 0x20, 0x33, 0x01, 0x10, 0x71, 0x00, 0x07,
+  } else if (page) {
+    event.sysex = {0xf0, 0, 0x20, 0x33, 1, 0x10, page, 0, index,
                    static_cast<uint8_t>(a), 0xf7};
   }
   std::lock_guard<std::mutex> guard(state.midiMutex);
-  if (state.pendingMidi.size() < 1024)
-    state.pendingMidi.emplace_back(std::move(event));
+  // The DSP parameter write leaves the hardware panel's backup fields alone.
+  // Store the chosen nonzero mode with the edit in the same MIDI batch.
+  const uint8_t backupIndex = a > 0 && action == "OSC3_MODE" ? 124 :
+      a >= 1 && a <= 4 && action == "KEY_MODE" ? 122 : 0;
+  if (state.pendingMidi.size() + (backupIndex ? 2 : 1) > 1024) return false;
+  state.pendingMidi.emplace_back(std::move(event));
+  if (backupIndex) {
+    synthLib::SMidiEvent backup(synthLib::MidiEventSource::Host, 0, 0, 0);
+    backup.sysex = {0xf0, 0, 0x20, 0x33, 1, 0x10, 0x6e, 0, backupIndex,
+                    static_cast<uint8_t>(a), 0xf7};
+    state.pendingMidi.emplace_back(std::move(backup));
+  }
   return true;
 }
 
@@ -238,7 +269,10 @@ int runAudio(State& state) {
         std::cerr << "[OSTIRUS_PRESET] name=";
         std::cerr.write(preset.name.data(), preset.name.size());
         std::cerr << " rates=" << unsigned(preset.lfoRates[0]) << ","
-                  << unsigned(preset.lfoRates[1]) << "," << unsigned(preset.lfoRates[2]) << "\n";
+                  << unsigned(preset.lfoRates[1]) << "," << unsigned(preset.lfoRates[2])
+                  << " osc=" << unsigned(preset.osc3) << "," << unsigned(preset.sync)
+                  << "," << unsigned(preset.keyMode) << "," << unsigned(preset.osc3Backup)
+                  << "," << unsigned(preset.monoBackup) << "\n";
       }
       std::cerr << "[OSTIRUS_HEALTH] blocks=" << state.renderedBlocks.load()
                 << " peak=" << state.audioPeak.load()

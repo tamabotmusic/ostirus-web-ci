@@ -37,8 +37,16 @@ FRONT_RE = re.compile(
 
 PRESET_RE = re.compile(
     r"\[OSTIRUS_PRESET\] name=([ -~]{10})"
-    r"(?: rates=([0-9]{1,3}),([0-9]{1,3}),([0-9]{1,3}))?"
+    r"(?: rates=([0-9]{1,3}),([0-9]{1,3}),([0-9]{1,3})"
+    r"(?: osc=([0-9]{1,2}),([0-9]),([0-9]),([0-9]{1,2}),([0-9]))?)?"
 )
+
+
+OSCILLATOR_COMMANDS = {
+    "osc3_mode": ("OSC3_MODE", 67),
+    "osc_sync": ("OSC_SYNC", 1),
+    "key_mode": ("KEY_MODE", 5),
+}
 
 
 def midi_line(data):
@@ -69,6 +77,11 @@ def midi_line(data):
         value = data.get("value")
         if midi_number(value):
             return f"LFO3_RATE {value}"
+    elif isinstance(kind, str) and kind in OSCILLATOR_COMMANDS:
+        command, maximum = OSCILLATOR_COMMANDS[kind]
+        value = data.get("value")
+        if midi_number(value) and value <= maximum:
+            return f"{command} {value}"
     elif kind == "panic":
         return "CC 123 0"
     raise ValueError("Invalid MIDI event")
@@ -101,6 +114,7 @@ class NativeHost:
         self.last_frontpanel = None
         self.preset_name = None
         self.preset_lfo_rates = None
+        self.preset_oscillators = None
         self.last_preset = None
         self.messages = deque(maxlen=6)
         threading.Thread(target=self._read_stderr, daemon=True).start()
@@ -142,8 +156,18 @@ class NativeHost:
                         self.last_frontpanel = time.monotonic()
                 elif preset:
                     self.preset_name = preset[1].strip() or None
-                    rates = [int(value) for value in preset.groups()[1:] if value is not None]
+                    rates = [int(value) for value in preset.groups()[1:4] if value is not None]
                     self.preset_lfo_rates = rates if len(rates) == 3 and max(rates) <= 127 else None
+                    fields = preset.groups()[4:]
+                    self.preset_oscillators = None
+                    if all(value is not None for value in fields):
+                        osc3, sync, key_mode, osc3_backup, mono_backup = map(int, fields)
+                        if (osc3 <= 67 and sync <= 1 and key_mode <= 5
+                                and 1 <= osc3_backup <= 67 and 1 <= mono_backup <= 4):
+                            self.preset_oscillators = dict(
+                                osc3=osc3, sync=sync, keyMode=key_mode,
+                                osc3Backup=osc3_backup, monoBackup=mono_backup,
+                            )
                     self.last_preset = time.monotonic()
                 elif line.startswith("[OSTIRUS_ERROR]"):
                     # Do not propagate arbitrary firmware paths or exception text into the UI.
@@ -191,6 +215,7 @@ class NativeHost:
                 "messages": list(self.messages),
                 "dspFrontpanel": feedback,
                 "activePresetName": self.preset_name if preset_fresh else None,
+                "presetOscillators": self.preset_oscillators if preset_fresh else None,
                 "activePresetLfoRates": self.preset_lfo_rates if preset_fresh else None,
                 "architecture": "Native CoreAudio · local MIDI via HTTP",
                 "firmware": "Fichero local, nunca enviado al navegador",

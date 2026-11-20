@@ -125,6 +125,7 @@ function selectProgram(program, transmit = true) {
   const select = el("program");
   select.value = String(program);
   programSelectionRevision++;
+  window.dispatchEvent(new CustomEvent("ti2-oscillator-readback", {detail: null}));
   // 'input' notifies the physical LCD and VALUE 3 knob without triggering
   // another Program Change through the dropdown's 'change' listener.
   select.dispatchEvent(new Event("input", { bubbles: true }));
@@ -209,11 +210,17 @@ let statusRequestInFlight = false;
 async function updateStatus() {
   if (statusRequestInFlight) return;
   statusRequestInFlight = true;
+  const revision = programSelectionRevision;
   try {
     const result = await fetch("/api/status", { cache: "no-store" });
     if (!result.ok) throw new Error("Server unavailable");
     const state = await result.json();
     displayStatus(state);
+    if (revision === programSelectionRevision) {
+      window.dispatchEvent(new CustomEvent("ti2-oscillator-readback", {
+        detail: state.presetOscillators ?? null,
+      }));
+    }
     window.dispatchEvent(new CustomEvent("ti2-preset-readback", {detail: {
       name: state.activePresetName ?? null,
       lfoRates: state.activePresetLfoRates ?? null,
@@ -224,6 +231,7 @@ async function updateStatus() {
   } catch (_err) {
     window.dispatchEvent(new CustomEvent("ti2-dsp-frontpanel", {detail: null}));
     window.dispatchEvent(new CustomEvent("ti2-preset-readback", {detail: null}));
+    window.dispatchEvent(new CustomEvent("ti2-oscillator-readback", {detail: null}));
     if (lastStatus !== null) {
       el("connection").className = "status-pill bad";
       el("connection").textContent = "Servidor desconectado";

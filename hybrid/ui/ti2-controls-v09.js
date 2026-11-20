@@ -2,7 +2,7 @@
 /** OsTIrus TI2 v0.9: shared physical OSC and FILTER focus.
  * Source: Access Virus TI2 Quickstart, Oscillator/Filter sections; Virus TI
  * MIDI controller chart. Selection LEDs indicate *local focus only*.
- * No patch dump, SysEx, NRPN or firmware-state read is available.
+ * OSC SELECT skips oscillator 3 when native readback reports it disabled.
  * Geometry and approved v0.7 silkscreen remain unchanged.
  */
 (() => {
@@ -13,6 +13,7 @@
   // null = focus not explicitly chosen by this browser. Preserve the v0.8
   // default CC path for OSC1 and Filter1, but keep ALL selection LEDs dark.
   let oscillator=null;
+  let osc3Enabled=null;
   let filters=[];
   const effectiveOsc=()=>oscillator===null?1:oscillator;
   const effectiveFilters=()=>filters.length?filters:[1];
@@ -77,9 +78,16 @@
     });
   }
   makeKey(selectOsc,'oscillator-focus','Seleccionar oscilador; solo selección local',()=>{
-    oscillator=oscillator===null?1:oscillator===3?1:oscillator+1;
+    oscillator=oscillator===null || oscillator===(osc3Enabled===false?2:3)?1:oscillator+1;
     refresh();
     status('OSC '+oscillator+(oscillator===3?' · sin CC estándar para los encoders compartidos':''));
+  });
+  window.addEventListener('ti2-oscillator-readback',event=>{
+    osc3Enabled=event.detail ? event.detail.osc3>0 : null;
+    if(osc3Enabled===false && oscillator===3){
+      oscillator=1;
+      refresh();
+    }
   });
   function selectFilter(f,combined){
     // The TI2 manual allows both filters to be selected together.

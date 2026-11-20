@@ -35,7 +35,6 @@ class PhysicalControlTests(unittest.TestCase):
                      "{1:20,2:25,3:null}","osc===2?26:null"):
             self.assertIn(code,V09)
         self.assertIn("makeKey(selectOsc,'oscillator-focus'",V09)
-        self.assertIn("oscillator===3?1:oscillator+1",V09)
         self.assertIn("if(!mapped.length)",PANEL)
 
     def test_filter_mappings_both_filters(self):
