@@ -66,6 +66,12 @@ jobs:
           cp hybrid/ABRIR_OSTIRUS_WEB.command hybrid/LEEME.md dist/OsTIrus_Web_Nativo/
           chmod 755 dist/OsTIrus_Web_Nativo/bin/ostirus_native_host
           chmod 755 dist/OsTIrus_Web_Nativo/ABRIR_OSTIRUS_WEB.command
+      - name: Probar LFO y MIDI en Chrome con la interfaz empaquetada
+        run: |
+          BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          python hybrid/tests/run_browser_lfo_audit.py dist/OsTIrus_Web_Nativo/ui --browser "$BROWSER"
+      - name: Comprimir paquete verificado
+        run: |
           ditto -c -k --keepParent dist/OsTIrus_Web_Nativo dist/OsTIrus_Web_Nativo.zip
           test -s dist/OsTIrus_Web_Nativo.zip
           unzip -l dist/OsTIrus_Web_Nativo.zip
