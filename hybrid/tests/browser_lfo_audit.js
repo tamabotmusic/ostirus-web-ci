@@ -1,9 +1,7 @@
 "use strict";
 
 (async () => {
-  const result = document.createElement("output");
-  result.id = "lfo-audit";
-  document.body.append(result);
+  let result = "PASS";
 
   const assert = (ok, message) => {
     if (!ok) throw new Error(message);
@@ -47,8 +45,8 @@
     await fetch("/audit/end-feedback");
     await waitFor(() => led.dataset.state === "unavailable", "El LED conserva una fase caducada");
     assert(getComputedStyle(led).fill === "rgb(36, 46, 49)", "El LED queda iluminado sin datos");
-    result.textContent = "PASS";
   } catch (error) {
-    result.textContent = error.message;
+    result = error.message;
   }
+  await fetch("/audit/result", { method: "POST", body: result });
 })();

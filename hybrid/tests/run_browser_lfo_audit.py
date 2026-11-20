@@ -2,12 +2,11 @@
 import argparse
 from http.server import ThreadingHTTPServer
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import sys
 import tempfile
-from threading import Thread
+from threading import Event, Thread
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import server
@@ -38,6 +37,20 @@ class EngineFixture:
 
 class AuditHandler(server.LocalHandler):
     backend = EngineFixture()
+    finished = Event()
+    result = None
+
+    def do_POST(self):
+        if self.path != "/audit/result":
+            return super().do_POST()
+        if not self._allowed_host() or self.headers.get("Origin") != f"http://127.0.0.1:{self.server.server_port}":
+            return self._json(403, {})
+        length = int(self.headers.get("Content-Length", "0"))
+        if not 1 <= length <= 2048:
+            return self._json(400, {})
+        AuditHandler.result = self.rfile.read(length).decode("utf-8")
+        self._json(200, {})
+        self.finished.set()
 
     def do_GET(self):
         if self.path == "/audit.js":
@@ -68,21 +81,32 @@ def main():
             worker = Thread(target=http.serve_forever, daemon=True)
             worker.start()
             try:
-                run = subprocess.run([
+                with subprocess.Popen([
                     args.browser, "--headless", "--no-sandbox", "--disable-dev-shm-usage",
-                    "--window-size=1600,1000", "--virtual-time-budget=8000", "--dump-dom",
+                    "--window-size=1600,1000", "--no-first-run",
                     f"--user-data-dir={temporary}/browser", f"http://127.0.0.1:{http.server_port}/",
-                ], capture_output=True, text=True, timeout=30)
+                ], stdout=subprocess.DEVNULL) as chrome:
+                    try:
+                        for _ in range(30):
+                            if AuditHandler.finished.wait(1):
+                                break
+                            if chrome.poll() is not None:
+                                raise SystemExit(f"Chrome terminó con código {chrome.returncode}")
+                        else:
+                            raise SystemExit("Chrome no devolvió el resultado de la auditoría")
+                    finally:
+                        if chrome.poll() is None:
+                            chrome.terminate()
+                            try:
+                                chrome.wait(timeout=5)
+                            except subprocess.TimeoutExpired:
+                                chrome.kill()
             finally:
                 http.shutdown()
                 worker.join()
 
-        if run.returncode != 0:
-            raise SystemExit(run.stderr or f"Chrome terminó con código {run.returncode}")
-
-        output = re.search(r'<output id="lfo-audit">(.*?)</output>', run.stdout, re.S)
-        if output is None or output.group(1) != "PASS":
-            raise SystemExit(output.group(1) if output else "La auditoría no se ejecutó")
+        if AuditHandler.result != "PASS":
+            raise SystemExit(AuditHandler.result)
         print("PASS: selección LFO, MIDI RATE, LED DSP y caducidad")
 
 
