@@ -224,3 +224,50 @@ test("an external CC response from before a program change cannot refill the pan
   await tick();
   assert.equal(run("window.OsTIrusTI2Knobs.localValue(79)"), 73);
 });
+
+test("disconnecting a MIDI input releases only its notes", async () => {
+  const {pendingMidi, run} = loadPanel({withApp: true});
+  const tick = () => new Promise(resolve => setImmediate(resolve));
+  await run(`
+    const input = {name: "Test MIDI", state: "connected"};
+    const access = {inputs: new Map([["input", input]])};
+    globalThis.navigator = {requestMIDIAccess: async () => access};
+    connectMidi();
+  `);
+  run(`
+    noteOn(60);
+    input.onmidimessage({currentTarget: input, data: [0x90, 60, 90]});
+    input.onmidimessage({currentTarget: input, data: [0x90, 61, 90]});
+    input.state = "disconnected";
+    access.onstatechange();
+    noteOff(60);
+  `);
+  for (const message of [
+    {type: "note_on", note: 60, velocity: 100},
+    {type: "note_on", note: 61, velocity: 90},
+    {type: "note_off", note: 61},
+    {type: "note_off", note: 60},
+  ]) {
+    await tick();
+    assert.equal(pendingMidi.length, 1);
+    const request = pendingMidi.shift();
+    assert.deepEqual(request.message, message);
+    request.resolve({ok: true});
+  }
+  await tick();
+  assert.equal(pendingMidi.length, 0);
+  assert.equal(run("input.onmidimessage"), null);
+});
+
+test("a rejected Note On does not suppress a later press", async () => {
+  const {pendingMidi, run} = loadPanel({withApp: true});
+  const tick = () => new Promise(resolve => setImmediate(resolve));
+  run("noteOn(60)");
+  await tick();
+  pendingMidi.shift().resolve({ok: false});
+  await tick();
+  run("noteOn(60)");
+  await tick();
+  assert.deepEqual(pendingMidi[0].message, {type: "note_on", note: 60, velocity: 100});
+  pendingMidi.shift().resolve({ok: true});
+});

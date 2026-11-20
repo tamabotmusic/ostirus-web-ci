@@ -3,7 +3,8 @@
 // Browser UI only sends MIDI to 127.0.0.1. No ROM, audio processing,
 // network dependency, localStorage or external CDNs are used.
 const el = (id) => document.getElementById(id);
-const heldNotes = new Set();
+const heldNotes = new Map();
+const computerKeyboard = Symbol("computer keyboard");
 const whiteSemitones = new Set([0, 2, 4, 5, 7, 9, 11]);
 const typingKeys = "awsedftgyhuj";
 let lastStatus = null;
@@ -32,23 +33,42 @@ function showMidiError(message) {
   el("midiInfo").textContent = message;
 }
 
-function noteOn(note, velocity = 100) {
-  if (!Number.isInteger(note) || note < 0 || note > 127 || heldNotes.has(note)) return;
-  heldNotes.add(note);
-  const key = document.querySelector('[data-note="' + note + '"]');
-  if (key) key.classList.add("active");
-  sendMidi({ type: "note_on", note, velocity }).catch(() => showMidiError("Sin comunicación con el motor nativo"));
+function noteOn(note, velocity = 100, source = computerKeyboard) {
+  if (!Number.isInteger(note) || note < 0 || note > 127) return;
+  const sources = heldNotes.get(note);
+  if (sources) {
+    sources.add(source);
+    return;
+  }
+  const owners = new Set([source]);
+  heldNotes.set(note, owners);
+  document.querySelector('[data-note="' + note + '"]')?.classList.add("active");
+  sendMidi({ type: "note_on", note, velocity }).catch(() => {
+    if (heldNotes.get(note) === owners) {
+      // Allow the next press to retry a rejected Note On.
+      heldNotes.delete(note);
+      document.querySelector('[data-note="' + note + '"]')?.classList.remove("active");
+    }
+    showMidiError("Sin comunicación con el motor nativo");
+  });
 }
 
-function noteOff(note) {
-  if (!heldNotes.delete(note)) return;
-  const key = document.querySelector('[data-note="' + note + '"]');
-  if (key) key.classList.remove("active");
+function noteOff(note, source = computerKeyboard) {
+  const sources = heldNotes.get(note);
+  if (!sources?.delete(source) || sources.size) return;
+  heldNotes.delete(note);
+  document.querySelector('[data-note="' + note + '"]')?.classList.remove("active");
   sendMidi({ type: "note_off", note }).catch(() => showMidiError("Sin comunicación con el motor nativo"));
 }
 
+function releaseSource(source) {
+  for (const note of heldNotes.keys()) noteOff(note, source);
+}
+
 function releaseAll() {
-  for (const note of [...heldNotes]) noteOff(note);
+  for (const [note, sources] of heldNotes) {
+    for (const source of sources) noteOff(note, source);
+  }
   sendMidi({ type: "panic" }).catch(() => {});
 }
 
@@ -73,11 +93,11 @@ function buildKeys() {
     key.addEventListener("pointerdown", (ev) => {
       ev.preventDefault();
       key.setPointerCapture(ev.pointerId);
-      noteOn(note);
+      noteOn(note, 100, key);
     });
-    key.addEventListener("pointerup", () => noteOff(note));
-    key.addEventListener("pointercancel", () => noteOff(note));
-    key.addEventListener("lostpointercapture", () => noteOff(note));
+    key.addEventListener("pointerup", () => noteOff(note, key));
+    key.addEventListener("pointercancel", () => noteOff(note, key));
+    key.addEventListener("lostpointercapture", () => noteOff(note, key));
     keyboard.appendChild(key);
   }
 }
@@ -198,12 +218,13 @@ async function updateStatus() {
 function onMidiMessage(event) {
   const [status, data1, data2] = event.data || [];
   if (status === undefined || data1 === undefined) return;
+  const source = event.currentTarget ?? onMidiMessage;
   switch (status & 0xf0) {
     case 0x90:
-      if (data2 > 0) noteOn(data1, data2); else noteOff(data1);
+      if (data2 > 0) noteOn(data1, data2, source); else noteOff(data1, source);
       break;
     case 0x80:
-      noteOff(data1);
+      noteOff(data1, source);
       break;
     case 0xb0: {
       const revision = programSelectionRevision;
@@ -224,16 +245,28 @@ function onMidiMessage(event) {
   }
 }
 
+let midiAccess;
 async function connectMidi() {
   if (!navigator.requestMIDIAccess) {
     showMidiError("Este navegador no permite MIDI externo; el teclado de pantalla sí funciona");
     return;
   }
+  if (midiAccess) return;
   try {
     const access = await navigator.requestMIDIAccess({ sysex: false });
+    if (midiAccess) return;
+    midiAccess = access;
+    let attached = new Set();
     function attach() {
-      const inputs = [...access.inputs.values()];
+      const inputs = [...access.inputs.values()].filter(input => input.state !== "disconnected");
+      const connected = new Set(inputs);
+      for (const input of attached) {
+        if (connected.has(input)) continue;
+        input.onmidimessage = null;
+        releaseSource(input);
+      }
       inputs.forEach(input => input.onmidimessage = onMidiMessage);
+      attached = connected;
       showMidiError(inputs.length ? "MIDI conectado: " + inputs.map(input => input.name).join(", ") : "MIDI autorizado, pero no hay un teclado conectado");
     }
     attach();
@@ -254,8 +287,14 @@ function setupComputerKeyboard() {
     const idx = typingKeys.indexOf(ev.key.toLowerCase());
     if (idx >= 0) noteOff(notes[idx]);
   });
-  window.addEventListener("blur", releaseAll);
-  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); });
+  const releaseLocalNotes = () => {
+    releaseSource(computerKeyboard);
+    for (const key of el("keyboard").children) releaseSource(key);
+  };
+  window.addEventListener("blur", releaseLocalNotes);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) releaseLocalNotes();
+  });
 }
 
 buildPrograms();
