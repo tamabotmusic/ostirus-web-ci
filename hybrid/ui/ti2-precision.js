@@ -200,15 +200,16 @@
       const controllers=()=>{
         const result=window.OsTIrusTI2Context?.resolveCC?.({label,x,y,baseCC:cc});
         const mapped=result===undefined?[cc]:result===null?[]:Array.isArray(result)?result:[result];
-        return [...new Set(mapped)].filter(v=>Number.isInteger(v)&&v>=0&&v<=127);
+        return [...new Set(mapped)].filter(v=>v==='lfo3_rate'||(Number.isInteger(v)&&v>=0&&v<=127));
       };
+      const describe=mapped=>mapped[0]==='lfo3_rate'?'LFO 3 · página B':'CC '+mapped.join(' + ');
       const refreshBinding=()=>{
         const mapped=controllers();
         const live=mapped.length>0;
         group.classList.toggle('control-live',live);
         group.classList.toggle('control-pending',!live);
         group.setAttribute('aria-disabled',String(!live));
-        if(live){
+        if(live && mapped[0]!=='lfo3_rate'){
           group.setAttribute('data-cc',String(mapped[0]));
           group.setAttribute('data-cc-list',mapped.join(','));
         }else{
@@ -222,7 +223,7 @@
         group.setAttribute('aria-valuetext',!live?'Sin asignación CC verificada para este contexto':
           remembered===undefined?'Posición neutra ilustrativa; valor del firmware desconocido':
           'Valor local enviado o recibido: '+val);
-        group.setAttribute('aria-label',label+(live?' (CC '+mapped.join(' y ')+')':' (sin CC verificado)'));
+        group.setAttribute('aria-label',label+(live?' ('+describe(mapped)+')':' (sin CC verificado)'));
       };
       knobRefreshers.push(refreshBinding);
       refreshBinding();
@@ -239,7 +240,7 @@
         group.setAttribute('aria-valuetext','Valor local enviado: '+val);
         mapped.forEach(controller=>localCCValues.set(controller,val));
         const editStatus=document.getElementById('ti2-precision-edit');
-        if(editStatus)editStatus.textContent=label+' · CC '+mapped.join(' + ')+' · '+val+' / 127 · local';
+        if(editStatus)editStatus.textContent=label+' · '+describe(mapped)+' · '+val+' / 127 · local';
         // Capture the CC mapping at gesture time, not after a later SELECT click.
         const previous=batches.at(-1);
         if(previous && previous.controllers.join(',')===mapped.join(','))previous.value=val;
@@ -252,7 +253,9 @@
           // coalesce successive moves of the same physical CC mapping.
           const sends=[];
           toSend.forEach(batch=>batch.controllers.forEach(controller=>{
-            sends.push(window.OsTIrusSendMidi({type:'cc',controller,value:batch.value}));
+            sends.push(window.OsTIrusSendMidi(controller==='lfo3_rate'
+              ? {type:'lfo3_rate',value:batch.value}
+              : {type:'cc',controller,value:batch.value}));
           }));
           Promise.all(sends).catch(()=>{if(editElement)editElement.textContent='MIDI ERROR · HOST NO DISPONIBLE';});
         });}

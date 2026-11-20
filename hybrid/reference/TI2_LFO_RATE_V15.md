@@ -1,5 +1,7 @@
 # OsTIrus TI2 v0.15 — Selección LFO y RATE contextual
 
+**Actualización posterior:** RATE en LFO 3 usa el parámetro TI2 de la página B, índice 7, verificado en `source/osTIrusJucePlugin/parameterDescriptions_TI.json` del archivo de fuentes fijado por CI. El servidor acepta un valor 0–127 y el host envía el mensaje de parámetro a la parte 0, como el editor de Gearmulator en modo Single. La descripción y las pruebas manuales inferiores corresponden a la versión histórica v0.15.
+
 **Base:** v0.13 validada por el usuario. Se ha excluido **por completo** la iluminación ornamental del logotipo de la rama v0.14, descartada tras su prueba. No hay cambios en el motor nativo, la ROM ni la geometría del panel v0.7.
 
 ## Comportamiento implementado

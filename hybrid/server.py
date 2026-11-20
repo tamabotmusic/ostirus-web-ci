@@ -60,6 +60,10 @@ def midi_line(data):
         controller, value = data.get("controller"), data.get("value")
         if midi_number(controller) and midi_number(value):
             return f"CC {controller} {value}"
+    elif kind == "lfo3_rate":
+        value = data.get("value")
+        if midi_number(value):
+            return f"LFO3_RATE {value}"
     elif kind == "panic":
         return "CC 123 0"
     raise ValueError("Invalid MIDI event")

@@ -50,7 +50,7 @@ test('actual panel has 32 knobs, 43 buttons, LFO LED geometry and RATE CC67 on s
  for(const i of [1,2,3])assert.ok(svg.querySelector('[data-ti2-dsp-lfo="'+i+'"]'));
 });
 
-test('physical RATE wheel issues CC79 after LFO2 SELECT; LFO3 RATE never edits LFO1',()=>{
+test('physical RATE wheel issues CC79 after LFO2 SELECT; LFO3 RATE sends a dedicated parameter',()=>{
  const {button,rate,messages,frame,window}=fixture();
  button(2).fire('click');
  assert.equal(rate.getAttribute('data-cc'),'79');
@@ -59,10 +59,13 @@ test('physical RATE wheel issues CC79 after LFO2 SELECT; LFO3 RATE never edits L
  assert.equal(messages.length,1);
  assert.equal(messages[0].controller,79);
  button(3).fire('click');
- assert.equal(rate.getAttribute('aria-disabled'),'true');
+ assert.equal(rate.getAttribute('aria-disabled'),'false');
+ assert.equal(rate.getAttribute('data-cc'),null);
  rate.fire('wheel');
  while(frame.length)frame.shift()();
- assert.equal(messages.length,1);
+ assert.equal(messages.length,2);
+ assert.equal(messages[1].type,'lfo3_rate');
+ assert.equal(messages[1].value,65);
  assert.equal(window.OsTIrusTI2Context.getSelection().lfo,3);
 });
 

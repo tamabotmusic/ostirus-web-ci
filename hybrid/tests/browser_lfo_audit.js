@@ -42,6 +42,14 @@
     clickAt(lfo1, cap.x + cap.width / 2, cap.y + cap.height / 2);
     assert(rate.dataset.cc === "67" && lfo2.getAttribute("aria-pressed") === "false",
       "El botón SELECT no vuelve a LFO 1");
+    const lfo3 = svg.querySelector('[data-name="LFO 3 SELECT"]');
+    const lfo3Cap = lfo3.querySelector("rect").getBoundingClientRect();
+    clickAt(lfo3, lfo3Cap.x + lfo3Cap.width / 2, lfo3Cap.y + lfo3Cap.height / 2);
+    assert(lfo3.getAttribute("aria-pressed") === "true" && !rate.hasAttribute("data-cc"),
+      "LFO 3 no usa su parámetro nativo");
+    rate.dispatchEvent(new WheelEvent("wheel", { deltaY: -100, cancelable: true }));
+    await waitFor(async () => (await (await fetch("/audit/midi")).json()).includes("LFO3_RATE 65"),
+      "El servidor no recibió RATE para LFO 3");
     await fetch("/audit/end-feedback");
     await waitFor(() => led.dataset.state === "unavailable", "El LED conserva una fase caducada");
     assert(getComputedStyle(led).fill === "rgb(36, 46, 49)", "El LED queda iluminado sin datos");

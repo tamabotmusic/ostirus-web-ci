@@ -54,11 +54,11 @@ test('LFO1 and LFO2 selectors remap RATE to verified CC67 and CC79', () => {
   buttons[0].dispatch('click');
   assert.equal(snapshots.at(-1).rate,67);
 });
-test('LFO3 selector disables RATE instead of changing LFO1', () => {
+test('LFO3 selector binds RATE to the native parameter', () => {
   const {buttons,snapshots,caption}=fixture();
   buttons[2].dispatch('click');
-  assert.equal(snapshots.at(-1).rate,null);
-  assert.match(caption.textContent,/bloqueado/);
+  assert.equal(snapshots.at(-1).rate,'lfo3_rate');
+  assert.match(caption.textContent,/página B/);
 });
 test('LFO keys are keyboard-accessible and repeated select does not invent a menu', () => {
   const {buttons,snapshots,caption}=fixture();

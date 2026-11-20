@@ -127,12 +127,19 @@ bool midiCommand(State& state, const std::string& command) {
     status = 0xC0; data1 = static_cast<uint8_t>(a);
   } else if (action == "CC" && in >> a >> b && a >= 0 && a <= 127 && b >= 0 && b <= 127) {
     status = 0xB0; data1 = static_cast<uint8_t>(a); data2 = static_cast<uint8_t>(b);
-  } else {
+  } else if (action != "LFO3_RATE" || !(in >> a) || a < 0 || a > 127) {
     return false;
+  }
+  synthLib::SMidiEvent event(synthLib::MidiEventSource::Host, status, data1, data2);
+  if (action == "LFO3_RATE") {
+    // Gearmulator parameterDescriptions_TI.json: page B (0x71), index 7.
+    // Address part 0 as the editor does in Single mode.
+    event.sysex = {0xf0, 0x00, 0x20, 0x33, 0x01, 0x10, 0x71, 0x00, 0x07,
+                   static_cast<uint8_t>(a), 0xf7};
   }
   std::lock_guard<std::mutex> guard(state.midiMutex);
   if (state.pendingMidi.size() < 1024)
-    state.pendingMidi.emplace_back(synthLib::MidiEventSource::Host, status, data1, data2);
+    state.pendingMidi.emplace_back(std::move(event));
   return true;
 }
 

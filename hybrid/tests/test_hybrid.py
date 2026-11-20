@@ -27,6 +27,14 @@ class ValidationTests(unittest.TestCase):
         self.assertEqual(server_module.midi_line({"type": "program", "program": 127}), "PROG 127")
         self.assertEqual(server_module.midi_line({"type": "cc", "controller": 123, "value": 0}), "CC 123 0")
 
+    def test_lfo3_rate_only_accepts_midi_values(self):
+        for value in (0, 65, 127):
+            self.assertEqual(server_module.midi_line({"type": "lfo3_rate", "value": value}),
+                             f"LFO3_RATE {value}")
+        for value in (-1, 128, True, "65", None):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                server_module.midi_line({"type": "lfo3_rate", "value": value})
+
     def test_panic(self):
         self.assertEqual(server_module.midi_line({"type": "panic"}), "CC 123 0")
 

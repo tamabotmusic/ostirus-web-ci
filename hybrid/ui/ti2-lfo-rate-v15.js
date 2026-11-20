@@ -2,8 +2,7 @@
 /** TI2 v0.15: the physical LFO SELECT buttons put RATE in the chosen LFO's
  * context, per Access Virus TI manual / TI MIDI Controller Chart.
  *
- * CC 67 = LFO1 rate; CC 79 = LFO2 rate. LFO3's rate has NO verified direct
- * CC in the chart. Do not fall back to LFO1 when LFO3 is selected.
+ * CC 67 = LFO1 rate; CC 79 = LFO2 rate. LFO3 uses the native Page B command.
  *
  * Focus is LOCAL only. The three existing LFO LEDs remain driven exclusively
  * by actual DSP phases from v0.13; no simulated LEDs or firmware readback.
@@ -14,7 +13,7 @@
   const previous = window.OsTIrusTI2Context;
   if (!svg || !knobs || !previous) return;
 
-  const ccForRate = Object.freeze({1: 67, 2: 79, 3: null});
+  const ccForRate = Object.freeze({1: 67, 2: 79, 3: "lfo3_rate"});
   let focus = null; // Unknown until the user chooses a LFO; legacy RATE routes to LFO1.
   const selectors = [...svg.querySelectorAll('.ti2-button-group')];
   const caption = document.getElementById('ti2-precision-edit');
@@ -39,7 +38,7 @@
     for (const [index, button] of buttons.entries()) {
       button.setAttribute('aria-pressed', String(focus === index + 1));
       button.setAttribute('aria-label', 'Seleccionar LFO ' + (index + 1) +
-        (index === 2 ? '; RATE sin CC verificado' : '; RATE compartido'));
+        '; RATE compartido');
     }
     knobs.refresh(); // Preserves remembered LOCAL values by resolved CC.
   }
@@ -55,7 +54,7 @@
     focus = index;
     updateFocus();
     if (caption) caption.textContent = 'LFO ' + index +
-      (index === 3 ? ' seleccionado localmente · RATE bloqueado hasta verificar el protocolo' :
+      (index === 3 ? ' seleccionado localmente · RATE envía un parámetro de página B' :
         ' seleccionado localmente · RATE envía CC ' + ccForRate[index]);
   }
 
