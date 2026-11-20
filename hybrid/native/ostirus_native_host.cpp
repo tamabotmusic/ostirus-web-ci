@@ -48,7 +48,33 @@ struct State {
   std::atomic<float> logoLedLevel{0.0f};
   std::atomic<uint32_t> midiActivityMask{0};
   std::atomic<uint64_t> frontpanelRevision{0};
+  std::mutex presetMutex;
+  std::array<char, 10> presetName{};
+  bool presetAvailable = false;
 };
+
+// Single edit-buffer dump: nine header bytes, then the ABC-compatible
+// parameter block. The ten name bytes begin at parameter offset 240.
+void capturePresetName(State& state, const synthLib::SysexBuffer& bytes) {
+  constexpr std::array<uint8_t, 9> header = {0xf0, 0, 0x20, 0x33, 1, 0x10, 0x10, 0, 0x40};
+  constexpr size_t nameOffset = header.size() + 240;
+  constexpr size_t checksumOffset = header.size() + 256;
+  if (bytes.size() < checksumOffset + 2 || bytes.back() != 0xf7 ||
+      !std::equal(header.begin(), header.end(), bytes.begin())) return;
+  unsigned checksum = 0;
+  for (size_t i = 5; i < checksumOffset; ++i) checksum += bytes[i];
+  if ((checksum & 0x7f) != bytes[checksumOffset]) return;
+  std::array<char, 10> name;
+  for (size_t i = 0; i < name.size(); ++i) {
+    const auto ch = bytes[nameOffset + i];
+    name[i] = ch >= 32 && ch <= 126 ? static_cast<char>(ch) : ' ';
+  }
+  std::unique_lock<std::mutex> guard(state.presetMutex, std::try_to_lock);
+  if (guard) {
+    state.presetName = name;
+    state.presetAvailable = true;
+  }
+}
 
 void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
   synthLib::TAudioInputs inputs{};
@@ -71,6 +97,7 @@ void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
   // This is audio-thread-local: never read or clear midiOut from the HTTP thread.
   state.midiOut.clear();
   state.synth->process(inputs, outputs, kFrames, midi, state.midiOut);
+  for (const auto& event : state.midiOut) capturePresetName(state, event.sysex);
   // Read the DSP's already-emitted frontpanel packet. This is NOT a patch
   // dump: it exposes LFO/BPM/logo indicator levels and MIDI activity only.
   // FrontpanelState::fromMidiEvent validates the SysEx header and length.
@@ -127,11 +154,14 @@ bool midiCommand(State& state, const std::string& command) {
     status = 0xC0; data1 = static_cast<uint8_t>(a);
   } else if (action == "CC" && in >> a >> b && a >= 0 && a <= 127 && b >= 0 && b <= 127) {
     status = 0xB0; data1 = static_cast<uint8_t>(a); data2 = static_cast<uint8_t>(b);
-  } else if (action != "LFO3_RATE" || !(in >> a) || a < 0 || a > 127) {
+  } else if (action != "READ_PRESET" &&
+             (action != "LFO3_RATE" || !(in >> a) || a < 0 || a > 127)) {
     return false;
   }
   synthLib::SMidiEvent event(synthLib::MidiEventSource::Host, status, data1, data2);
-  if (action == "LFO3_RATE") {
+  if (action == "READ_PRESET") {
+    event.sysex = {0xf0, 0, 0x20, 0x33, 1, 0x10, 0x30, 0, 0x40, 0xf7};
+  } else if (action == "LFO3_RATE") {
     // Gearmulator parameterDescriptions_TI.json: page B (0x71), index 7.
     // Address part 0 as the editor does in Single mode.
     event.sysex = {0xf0, 0x00, 0x20, 0x33, 0x01, 0x10, 0x71, 0x00, 0x07,
@@ -178,10 +208,25 @@ int runAudio(State& state) {
   }
   if (AudioQueueStart(queue, nullptr) != noErr) { AudioQueueDispose(queue, true); return 4; }
   std::cerr << "[OSTIRUS_READY] audio=CoreAudio rate=44100\n";
+  unsigned presetPoll = 0;
   std::string line;
   while (std::getline(std::cin, line)) {
     if (line == "STOP") break;
     if (line == "PING") {
+      if (presetPoll++ % 10 == 0) midiCommand(state, "READ_PRESET");
+      std::array<char, 10> name{};
+      bool available;
+      {
+        std::lock_guard<std::mutex> guard(state.presetMutex);
+        available = state.presetAvailable;
+        if (available) name = state.presetName;
+        state.presetAvailable = false;
+      }
+      if (available) {
+        std::cerr << "[OSTIRUS_PRESET] name=";
+        std::cerr.write(name.data(), name.size());
+        std::cerr << "\n";
+      }
       std::cerr << "[OSTIRUS_HEALTH] blocks=" << state.renderedBlocks.load()
                 << " peak=" << state.audioPeak.load()
                 << " pair=" << state.selectedPair.load()

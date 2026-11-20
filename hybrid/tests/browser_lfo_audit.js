@@ -21,6 +21,7 @@
 
   try {
     const svg = document.querySelector(".ti2-photo-svg");
+    const lcd = svg.querySelector(".lcd-title");
     const rate = svg.querySelector('[data-label="RATE"]');
     const indicator = svg.querySelector('[data-ti2-lfo-selector="2"]');
     const led = indicator.querySelector("circle");
@@ -29,6 +30,7 @@
 
     await waitFor(() => led.dataset.state === "dsp", "El LED no recibe fases por HTTP");
     assert(getComputedStyle(led).fill !== "rgb(36, 46, 49)", "El LED con fase cero está apagado");
+    assert(lcd.textContent === "Test Patch", "El LCD no muestra el preset activo");
     const dot = led.getBoundingClientRect();
     clickAt(indicator, dot.x + dot.width / 2, dot.y + dot.height / 2);
     assert(lfo2.getAttribute("aria-pressed") === "true", "LFO 2 no queda seleccionado");
@@ -52,6 +54,7 @@
       "El servidor no recibió RATE para LFO 3");
     await fetch("/audit/end-feedback");
     await waitFor(() => led.dataset.state === "unavailable", "El LED conserva una fase caducada");
+    assert(lcd.textContent.startsWith("PROGRAM "), "El LCD conserva un nombre caducado");
     assert(getComputedStyle(led).fill === "rgb(36, 46, 49)", "El LED queda iluminado sin datos");
   } catch (error) {
     result = error.message;

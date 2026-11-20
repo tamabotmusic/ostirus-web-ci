@@ -21,6 +21,7 @@ class EngineFixture:
         return {
             "nativeRunning": True,
             "nativeReady": True,
+            "activePresetName": "Test Patch" if self.age < 3 else None,
             "healthAgeSeconds": 0,
             "dspFrontpanel": {
                 "source": "dsp-frontpanel",

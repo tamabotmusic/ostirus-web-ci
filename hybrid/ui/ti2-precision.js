@@ -410,10 +410,17 @@
   txt(svg,734,500,'OsTIrus / TI²','lcd-logo',{'text-anchor':'middle'});
   const lcdState=txt(svg,615,467,'','lcd-tiny');
   const selector=document.getElementById('program');
-  const setPatch=()=>{const v=Number(selector.value)+1;
-    lcdPatch.textContent='PROGRAM '+String(v).padStart(3,'0');
-    lcdState.textContent='';
+  let activePresetName=null;
+  const setPatch=()=>{
+    const program='PROGRAM '+String(Number(selector.value)+1).padStart(3,'0');
+    lcdPatch.textContent=activePresetName || program;
+    lcdState.textContent=activePresetName?'PRESET ACTIVO · '+program+' SELECCIONADO':'';
   };
+  window.addEventListener('ti2-preset-name',event=>{
+    activePresetName=typeof event.detail==='string' && /^[ -~]{1,10}$/.test(event.detail)
+      ?event.detail.trim() || null:null;
+    setPatch();
+  });
   selector.addEventListener('change',setPatch);
   selector.addEventListener('input',setPatch);
   // Program Change invalidates local CC cache; a new patch's values are unknown.

@@ -94,13 +94,15 @@ class NativeHost:
         self.last_health = None
         self.frontpanel = None
         self.last_frontpanel = None
+        self.preset_name = None
+        self.last_preset = None
         self.messages = deque(maxlen=6)
         threading.Thread(target=self._read_stderr, daemon=True).start()
         threading.Thread(target=self._ping_loop, daemon=True).start()
 
     def _read_stderr(self):
         for raw in self.process.stderr:
-            line = raw.strip()
+            line = raw.rstrip("\r\n")
             health = HEALTH_RE.fullmatch(line)
             front = FRONT_RE.fullmatch(line)
             with self._state_lock:
@@ -131,6 +133,9 @@ class NativeHost:
                             "midiActivityMask": activity,
                         }
                         self.last_frontpanel = time.monotonic()
+                elif re.fullmatch(r"\[OSTIRUS_PRESET\] name=[ -~]{10}", line):
+                    self.preset_name = line.removeprefix("[OSTIRUS_PRESET] name=").strip() or None
+                    self.last_preset = time.monotonic()
                 elif line.startswith("[OSTIRUS_ERROR]"):
                     # Do not propagate arbitrary firmware paths or exception text into the UI.
                     self.messages.append("El motor nativo ha comunicado un error.")
@@ -175,6 +180,9 @@ class NativeHost:
                     else round(time.monotonic() - self.last_health, 1),
                 "messages": list(self.messages),
                 "dspFrontpanel": feedback,
+                "activePresetName": self.preset_name if (
+                    up and self.last_preset is not None and time.monotonic() - self.last_preset < 3
+                ) else None,
                 "architecture": "Native CoreAudio · local MIDI via HTTP",
                 "firmware": "Fichero local, nunca enviado al navegador",
             }
