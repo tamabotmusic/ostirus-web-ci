@@ -30,6 +30,11 @@ namespace {
 constexpr uint32_t kSampleRate = 44100;
 constexpr size_t kFrames = 256;
 
+struct PresetReadback {
+  std::array<char, 10> name{};
+  std::array<uint8_t, 3> lfoRates{};
+};
+
 struct State {
   std::unique_ptr<virusLib::Device> synth;
   std::mutex midiMutex;
@@ -49,13 +54,13 @@ struct State {
   std::atomic<uint32_t> midiActivityMask{0};
   std::atomic<uint64_t> frontpanelRevision{0};
   std::mutex presetMutex;
-  std::array<char, 10> presetName{};
+  PresetReadback preset;
   bool presetAvailable = false;
 };
 
 // Single edit-buffer dump: nine header bytes, then the ABC-compatible
 // parameter block. The ten name bytes begin at parameter offset 240.
-void capturePresetName(State& state, const synthLib::SysexBuffer& bytes) {
+void capturePreset(State& state, const synthLib::SysexBuffer& bytes) {
   constexpr std::array<uint8_t, 9> header = {0xf0, 0, 0x20, 0x33, 1, 0x10, 0x10, 0, 0x40};
   constexpr size_t nameOffset = header.size() + 240;
   constexpr size_t checksumOffset = header.size() + 256;
@@ -64,14 +69,21 @@ void capturePresetName(State& state, const synthLib::SysexBuffer& bytes) {
   unsigned checksum = 0;
   for (size_t i = 5; i < checksumOffset; ++i) checksum += bytes[i];
   if ((checksum & 0x7f) != bytes[checksumOffset]) return;
-  std::array<char, 10> name;
-  for (size_t i = 0; i < name.size(); ++i) {
+  // Pages A and B are consecutive 128-byte blocks in the Single dump.
+  constexpr std::array<size_t, 3> rateOffsets = {67, 79, 128 + 7};
+  PresetReadback preset;
+  for (size_t i = 0; i < rateOffsets.size(); ++i) {
+    const auto rate = bytes[header.size() + rateOffsets[i]];
+    if (rate > 127) return;
+    preset.lfoRates[i] = rate;
+  }
+  for (size_t i = 0; i < preset.name.size(); ++i) {
     const auto ch = bytes[nameOffset + i];
-    name[i] = ch >= 32 && ch <= 126 ? static_cast<char>(ch) : ' ';
+    preset.name[i] = ch >= 32 && ch <= 126 ? static_cast<char>(ch) : ' ';
   }
   std::unique_lock<std::mutex> guard(state.presetMutex, std::try_to_lock);
   if (guard) {
-    state.presetName = name;
+    state.preset = preset;
     state.presetAvailable = true;
   }
 }
@@ -97,7 +109,7 @@ void renderBlock(State& state, std::array<float, kFrames * 2>& stereo) {
   // This is audio-thread-local: never read or clear midiOut from the HTTP thread.
   state.midiOut.clear();
   state.synth->process(inputs, outputs, kFrames, midi, state.midiOut);
-  for (const auto& event : state.midiOut) capturePresetName(state, event.sysex);
+  for (const auto& event : state.midiOut) capturePreset(state, event.sysex);
   // Read the DSP's already-emitted frontpanel packet. This is NOT a patch
   // dump: it exposes LFO/BPM/logo indicator levels and MIDI activity only.
   // FrontpanelState::fromMidiEvent validates the SysEx header and length.
@@ -214,18 +226,19 @@ int runAudio(State& state) {
     if (line == "STOP") break;
     if (line == "PING") {
       if (presetPoll++ % 10 == 0) midiCommand(state, "READ_PRESET");
-      std::array<char, 10> name{};
+      PresetReadback preset;
       bool available;
       {
         std::lock_guard<std::mutex> guard(state.presetMutex);
         available = state.presetAvailable;
-        if (available) name = state.presetName;
+        if (available) preset = state.preset;
         state.presetAvailable = false;
       }
       if (available) {
         std::cerr << "[OSTIRUS_PRESET] name=";
-        std::cerr.write(name.data(), name.size());
-        std::cerr << "\n";
+        std::cerr.write(preset.name.data(), preset.name.size());
+        std::cerr << " rates=" << unsigned(preset.lfoRates[0]) << ","
+                  << unsigned(preset.lfoRates[1]) << "," << unsigned(preset.lfoRates[2]) << "\n";
       }
       std::cerr << "[OSTIRUS_HEALTH] blocks=" << state.renderedBlocks.load()
                 << " peak=" << state.audioPeak.load()

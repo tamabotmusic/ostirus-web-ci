@@ -401,24 +401,31 @@
   txt(svg,952,634,'PROGRAM','panel-secondary',{'text-anchor':'middle'});
 
 
-  // LCD is a physical screen. Readout mirrors the already working Program Change selector.
+  // The LCD shows the native Single edit buffer when fresh.
   create('rect',{x:581,y:364,width:317,height:159,rx:9,fill:'#12191d',stroke:'#707b7e','stroke-width':3},svg);
   create('rect',{x:608,y:407,width:261,height:66,rx:2,fill:'url(#display)',stroke:'#182529','stroke-width':2},svg);
   txt(svg,615,418,'SINGLE', 'lcd-line');
   const lcdPatch=txt(svg,615,443,'PROGRAM 001','lcd-title');
-  txt(svg,615,460,'TI2 · OsTIrus','lcd-line');
+  const lcdRates=txt(svg,615,458,'TI2 · OsTIrus','lcd-line');
   txt(svg,734,500,'OsTIrus / TI²','lcd-logo',{'text-anchor':'middle'});
   const lcdState=txt(svg,615,467,'','lcd-tiny');
   const selector=document.getElementById('program');
   let activePresetName=null;
+  let activeLfoRates=null;
   const setPatch=()=>{
     const program='PROGRAM '+String(Number(selector.value)+1).padStart(3,'0');
     lcdPatch.textContent=activePresetName || program;
-    lcdState.textContent=activePresetName?'PRESET ACTIVO · '+program+' SELECCIONADO':'';
+    lcdRates.textContent=activeLfoRates
+      ? 'RATE   '+activeLfoRates.map((rate,index)=>'LFO'+(index+1)+' '+rate).join('   ')
+      : 'TI2 · OsTIrus';
+    lcdState.textContent=activePresetName?program+' SELECCIONADO':'';
   };
-  window.addEventListener('ti2-preset-name',event=>{
-    activePresetName=typeof event.detail==='string' && /^[ -~]{1,10}$/.test(event.detail)
-      ?event.detail.trim() || null:null;
+  window.addEventListener('ti2-preset-readback',event=>{
+    const {name,lfoRates}=event.detail||{};
+    activePresetName=typeof name==='string' && /^[ -~]{1,10}$/.test(name)
+      ?name.trim() || null:null;
+    activeLfoRates=Array.isArray(lfoRates) && lfoRates.length===3 &&
+      lfoRates.every(rate=>Number.isInteger(rate)&&rate>=0&&rate<=127) ? lfoRates:null;
     setPatch();
   });
   selector.addEventListener('change',setPatch);

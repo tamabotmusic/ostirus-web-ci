@@ -35,6 +35,11 @@ FRONT_RE = re.compile(
     r" bpm=" + FLOAT_RE + r" logo=" + FLOAT_RE + r" activity=(\d+)$"
 )
 
+PRESET_RE = re.compile(
+    r"\[OSTIRUS_PRESET\] name=([ -~]{10})"
+    r"(?: rates=([0-9]{1,3}),([0-9]{1,3}),([0-9]{1,3}))?"
+)
+
 
 def midi_line(data):
     """Validate and translate browser events into the native host's MIDI protocol."""
@@ -95,6 +100,7 @@ class NativeHost:
         self.frontpanel = None
         self.last_frontpanel = None
         self.preset_name = None
+        self.preset_lfo_rates = None
         self.last_preset = None
         self.messages = deque(maxlen=6)
         threading.Thread(target=self._read_stderr, daemon=True).start()
@@ -105,6 +111,7 @@ class NativeHost:
             line = raw.rstrip("\r\n")
             health = HEALTH_RE.fullmatch(line)
             front = FRONT_RE.fullmatch(line)
+            preset = PRESET_RE.fullmatch(line)
             with self._state_lock:
                 if line.startswith("[OSTIRUS_READY]"):
                     self.ready = True
@@ -133,8 +140,10 @@ class NativeHost:
                             "midiActivityMask": activity,
                         }
                         self.last_frontpanel = time.monotonic()
-                elif re.fullmatch(r"\[OSTIRUS_PRESET\] name=[ -~]{10}", line):
-                    self.preset_name = line.removeprefix("[OSTIRUS_PRESET] name=").strip() or None
+                elif preset:
+                    self.preset_name = preset[1].strip() or None
+                    rates = [int(value) for value in preset.groups()[1:] if value is not None]
+                    self.preset_lfo_rates = rates if len(rates) == 3 and max(rates) <= 127 else None
                     self.last_preset = time.monotonic()
                 elif line.startswith("[OSTIRUS_ERROR]"):
                     # Do not propagate arbitrary firmware paths or exception text into the UI.
@@ -163,6 +172,7 @@ class NativeHost:
     def status(self):
         with self._state_lock:
             up = self.process.poll() is None
+            preset_fresh = up and self.last_preset is not None and time.monotonic() - self.last_preset < 3
             # Never report stale or nonexistent DSP indicators as live.
             feedback = None
             if (up and self.frontpanel is not None and self.last_frontpanel is not None
@@ -180,9 +190,8 @@ class NativeHost:
                     else round(time.monotonic() - self.last_health, 1),
                 "messages": list(self.messages),
                 "dspFrontpanel": feedback,
-                "activePresetName": self.preset_name if (
-                    up and self.last_preset is not None and time.monotonic() - self.last_preset < 3
-                ) else None,
+                "activePresetName": self.preset_name if preset_fresh else None,
+                "activePresetLfoRates": self.preset_lfo_rates if preset_fresh else None,
                 "architecture": "Native CoreAudio · local MIDI via HTTP",
                 "firmware": "Fichero local, nunca enviado al navegador",
             }

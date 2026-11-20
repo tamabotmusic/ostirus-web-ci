@@ -214,13 +214,16 @@ async function updateStatus() {
     if (!result.ok) throw new Error("Server unavailable");
     const state = await result.json();
     displayStatus(state);
-    window.dispatchEvent(new CustomEvent("ti2-preset-name", {detail: state.activePresetName ?? null}));
+    window.dispatchEvent(new CustomEvent("ti2-preset-readback", {detail: {
+      name: state.activePresetName ?? null,
+      lfoRates: state.activePresetLfoRates ?? null,
+    }}));
     window.dispatchEvent(new CustomEvent("ti2-dsp-frontpanel", {
       detail: state.dspFrontpanel ?? null,
     }));
   } catch (_err) {
     window.dispatchEvent(new CustomEvent("ti2-dsp-frontpanel", {detail: null}));
-    window.dispatchEvent(new CustomEvent("ti2-preset-name", {detail: null}));
+    window.dispatchEvent(new CustomEvent("ti2-preset-readback", {detail: null}));
     if (lastStatus !== null) {
       el("connection").className = "status-pill bad";
       el("connection").textContent = "Servidor desconectado";
