@@ -271,3 +271,38 @@ test("a rejected Note On does not suppress a later press", async () => {
   assert.deepEqual(pendingMidi[0].message, {type: "note_on", note: 60, velocity: 100});
   pendingMidi.shift().resolve({ok: true});
 });
+
+test("sustain survives release on another MIDI input and resets on panic", async () => {
+  const {pendingMidi, run} = loadPanel({withApp: true});
+  const tick = () => new Promise(resolve => setImmediate(resolve));
+  await run(`
+    const first = {name: "First", state: "connected"};
+    const second = {name: "Second", state: "connected"};
+    const access = {inputs: new Map([["first", first], ["second", second]])};
+    globalThis.navigator = {requestMIDIAccess: async () => access};
+    connectMidi();
+  `);
+  run(`
+    const pedal = (source, value) =>
+      source.onmidimessage({currentTarget: source, data: [0xb0, 64, value]});
+    pedal(first, 127);
+    pedal(second, 90);
+    first.state = "disconnected";
+    access.onstatechange();
+    releaseAll();
+  `);
+  for (const message of [
+    {type: "cc", controller: 64, value: 127},
+    {type: "cc", controller: 64, value: 90},
+    {type: "cc", controller: 64, value: 0},
+    {type: "panic"},
+  ]) {
+    await tick();
+    assert.equal(pendingMidi.length, 1);
+    const request = pendingMidi.shift();
+    assert.deepEqual(request.message, message);
+    request.resolve({ok: true});
+  }
+  await tick();
+  assert.equal(pendingMidi.length, 0);
+});

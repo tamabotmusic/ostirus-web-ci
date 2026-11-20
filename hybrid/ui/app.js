@@ -4,6 +4,7 @@
 // network dependency, localStorage or external CDNs are used.
 const el = (id) => document.getElementById(id);
 const heldNotes = new Map();
+const sustainBySource = new Map();
 const computerKeyboard = Symbol("computer keyboard");
 const whiteSemitones = new Set([0, 2, 4, 5, 7, 9, 11]);
 const typingKeys = "awsedftgyhuj";
@@ -65,10 +66,23 @@ function releaseSource(source) {
   for (const note of heldNotes.keys()) noteOff(note, source);
 }
 
+function updateSustain(source, value) {
+  const previous = Math.max(0, ...sustainBySource.values());
+  if (value === 0) sustainBySource.delete(source);
+  else sustainBySource.set(source, value);
+  const current = Math.max(0, ...sustainBySource.values());
+  if (current !== previous) {
+    sendMidi({type: "cc", controller: 64, value: current})
+      .catch(() => showMidiError("No se pudo actualizar el pedal de sustain"));
+  }
+}
+
 function releaseAll() {
   for (const [note, sources] of heldNotes) {
     for (const source of sources) noteOff(note, source);
   }
+  sustainBySource.clear();
+  sendMidi({type: "cc", controller: 64, value: 0}).catch(() => {});
   sendMidi({ type: "panic" }).catch(() => {});
 }
 
@@ -227,6 +241,10 @@ function onMidiMessage(event) {
       noteOff(data1, source);
       break;
     case 0xb0: {
+      if (data1 === 64 && Number.isInteger(data2) && data2 >= 0 && data2 <= 127) {
+        updateSustain(source, data2);
+        break;
+      }
       const revision = programSelectionRevision;
       sendMidi({ type: "cc", controller: data1, value: data2 })
         .then(() => {
@@ -264,6 +282,7 @@ async function connectMidi() {
         if (connected.has(input)) continue;
         input.onmidimessage = null;
         releaseSource(input);
+        updateSustain(input, 0);
       }
       inputs.forEach(input => input.onmidimessage = onMidiMessage);
       attached = connected;
