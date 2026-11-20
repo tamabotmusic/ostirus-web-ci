@@ -22,6 +22,7 @@
   try {
     const svg = document.querySelector(".ti2-photo-svg");
     const lcd = svg.querySelector(".lcd-title");
+    const lcdRates = svg.querySelectorAll(".lcd-line")[1];
     const rate = svg.querySelector('[data-label="RATE"]');
     const indicator = svg.querySelector('[data-ti2-lfo-selector="2"]');
     const led = indicator.querySelector("circle");
@@ -31,6 +32,8 @@
     await waitFor(() => led.dataset.state === "dsp", "El LED no recibe fases por HTTP");
     assert(getComputedStyle(led).fill !== "rgb(36, 46, 49)", "El LED con fase cero está apagado");
     assert(lcd.textContent === "Test Patch", "El LCD no muestra el preset activo");
+    assert(lcdRates.textContent === "RATE   LFO1 12   LFO2 34   LFO3 56",
+      "El LCD no muestra los tres RATE recibidos por HTTP");
     const dot = led.getBoundingClientRect();
     clickAt(indicator, dot.x + dot.width / 2, dot.y + dot.height / 2);
     assert(lfo2.getAttribute("aria-pressed") === "true", "LFO 2 no queda seleccionado");
@@ -52,9 +55,13 @@
     rate.dispatchEvent(new WheelEvent("wheel", { deltaY: -100, cancelable: true }));
     await waitFor(async () => (await (await fetch("/audit/midi")).json()).includes("LFO3_RATE 65"),
       "El servidor no recibió RATE para LFO 3");
+    await fetch("/audit/change-rates");
+    await waitFor(() => lcdRates.textContent === "RATE   LFO1 0   LFO2 65   LFO3 127",
+      "El LCD no actualiza los RATE recibidos por HTTP");
     await fetch("/audit/end-feedback");
     await waitFor(() => led.dataset.state === "unavailable", "El LED conserva una fase caducada");
     assert(lcd.textContent.startsWith("PROGRAM "), "El LCD conserva un nombre caducado");
+    assert(lcdRates.textContent === "TI2 · OsTIrus", "El LCD conserva valores de RATE caducados");
     assert(getComputedStyle(led).fill === "rgb(36, 46, 49)", "El LED queda iluminado sin datos");
   } catch (error) {
     result = error.message;

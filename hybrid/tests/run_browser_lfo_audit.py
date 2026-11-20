@@ -16,12 +16,14 @@ class EngineFixture:
     def __init__(self):
         self.commands = []
         self.age = 0
+        self.rates = [12, 34, 56]
 
     def status(self):
         return {
             "nativeRunning": True,
             "nativeReady": True,
             "activePresetName": "Test Patch" if self.age < 3 else None,
+            "activePresetLfoRates": self.rates if self.age < 3 else None,
             "healthAgeSeconds": 0,
             "dspFrontpanel": {
                 "source": "dsp-frontpanel",
@@ -59,6 +61,9 @@ class AuditHandler(server.LocalHandler):
             return self._response(200, script, "text/javascript")
         if self.path == "/audit/midi":
             return self._json(200, self.backend.commands)
+        if self.path == "/audit/change-rates":
+            self.backend.rates = [0, 65, 127]
+            return self._json(200, {})
         if self.path == "/audit/end-feedback":
             self.backend.age = 4
             return self._json(200, {})
@@ -108,7 +113,7 @@ def main():
 
         if AuditHandler.result != "PASS":
             raise SystemExit(AuditHandler.result)
-        print("PASS: selección LFO, MIDI RATE, LED DSP y caducidad")
+        print("PASS: selección LFO, MIDI RATE, LED DSP, LCD y caducidad")
 
 
 if __name__ == "__main__":
